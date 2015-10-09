@@ -13,3 +13,9 @@ class UploadRequest(namedtuple("UploadRequest", ["username", "request"])):
     """
     """
 
+
+class AfterDBCleanupRequest(namedtuple("AfterDBCleanupRequest", [])):
+    """
+    Request refill of the user-related informations after the database was
+    cleaned.
+    """
