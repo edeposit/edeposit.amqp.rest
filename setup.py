@@ -1,54 +1,66 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
+#
+# Interpreter version: python 2.7
+#
+# Imports =====================================================================
 from setuptools import setup, find_packages
-
 from docs import getVersion
 
 
-changelog = open('CHANGES.rst').read()
+# Variables ===================================================================
+changelog = open('CHANGELOG.rst').read()
 long_description = "\n\n".join([
     open('README.rst').read(),
-    open('CONTRIBUTORS.rst').read(),
     changelog
 ])
 
 
+# Actual setup definition =====================================================
 setup(
-    name='cz-urnnbn-api',
+    name='edeposit.amqp.rest',
     version=getVersion(changelog),
-    description="API for the Czech URN:NBN resolver (https://resolver.nkp.cz).",
+    description="REST API to access Edeposit website.",
     long_description=long_description,
-    url='https://github.com/edeposit/cz-urnnbn-api/',
+    url='https://github.com/edeposit/edeposit.amqp.rest/',
 
     author='Edeposit team',
     author_email='edeposit@email.cz',
 
     classifiers=[
+        "Development Status :: 3 - Alpha",
+        'Intended Audience :: Developers',
+
+        "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 2.7",
-        "License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)",
-        "Topic :: Software Development :: Libraries :: Python Modules"
+
+        "License :: OSI Approved :: MIT License",
     ],
-    license='GPL2+',
+    license='MIT',
 
     packages=find_packages('src'),
     package_dir={'': 'src'},
-
-    # scripts=[''],
-
     namespace_packages=['edeposit', 'edeposit.amqp'],
-    include_package_data=True,
-    zip_safe=False,
-    install_requires=[
-        'setuptools',
-        "attribute_wrapper"
+
+    scripts=[
+        # 'bin/edeposit_storage_runzeo.sh',
+        # 'bin/edeposit_storage_server.py',
     ],
+
+    zip_safe=False,
+    include_package_data=True,
+    install_requires=open("requirements.txt").read().splitlines(),
+
+    test_suite='py.test',
+    tests_require=["pytest"],
     extras_require={
         "test": [
-            "pytest"
+            "pytest",
+            # "fake-factory"
         ],
         "docs": [
             "sphinx",
             "sphinxcontrib-napoleon",
         ]
-    }
+    },
 )
