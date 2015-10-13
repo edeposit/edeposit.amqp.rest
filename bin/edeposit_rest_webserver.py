@@ -18,19 +18,22 @@ from bottle import SimpleTemplate
 sys.path.insert(0, join(dirname(__file__), "../src/edeposit/amqp"))
 
 try:
-    # from storage import zconf
-    from storage import settings
+    # from rest import zconf
+    from rest import settings
 except ImportError:
-    # from edeposit.amqp.storage import zconf
-    from edeposit.amqp.storage import settings
+    # from edeposit.amqp.rest import zconf
+    from edeposit.amqp.rest import settings
 
 
 # Variables ===================================================================
-
+TEMPLATE_PATH = join(dirname(__file__), "../src/edeposit/amqp/rest/templates")
 
 
 # Functions & classes =========================================================
-
+@route("/")
+def index():
+    with open(join(TEMPLATE_PATH, "index.html")) as f:
+        return f.read()
 
 
 # Main program ================================================================
