@@ -111,8 +111,8 @@ def _read_from_paths():
 _read_from_paths()
 
 
-# Checks ======================================================================
-assert PUBLIC_DIR and PRIVATE_DIR and ARCHIVE_DIR, (
-    "You have to set PUBLIC_DIR (%s), PRIVATE_DIR (%s), ARCHIVE_DIR (%s) "
-    "values in your config!"
-) % (PUBLIC_DIR or "UNSET!", PRIVATE_DIR or "UNSET!", ARCHIVE_DIR or "UNSET!")
+# # Checks ======================================================================
+# assert PUBLIC_DIR and PRIVATE_DIR and ARCHIVE_DIR, (
+#     "You have to set PUBLIC_DIR (%s), PRIVATE_DIR (%s), ARCHIVE_DIR (%s) "
+#     "values in your config!"
+# ) % (PUBLIC_DIR or "UNSET!", PRIVATE_DIR or "UNSET!", ARCHIVE_DIR or "UNSET!")
