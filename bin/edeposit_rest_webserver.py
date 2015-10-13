@@ -13,6 +13,7 @@ from os.path import dirname
 
 from bottle import run
 from bottle import route
+from bottle import auth_basic
 from bottle import SimpleTemplate
 
 sys.path.insert(0, join(dirname(__file__), "../src/edeposit/amqp"))
@@ -27,11 +28,36 @@ except ImportError:
 
 # Variables ===================================================================
 TEMPLATE_PATH = join(dirname(__file__), "../src/edeposit/amqp/rest/templates")
+V1_PATH = "/api/v1/"
 
 
 # Functions & classes =========================================================
+def check_auth(username, password):
+    return True
+
+
+# API definition =========================================================
+@route(join(V1_PATH, "track/<uid>"))
+@auth_basic(check_auth)
+def track_publication(uid=None):
+    if not uid:
+        return track_publications()
+
+
+@route(join(V1_PATH, "track"))
+@auth_basic(check_auth)
+def track_publications():
+    pass
+
+
+@route(join(V1_PATH, "submit"))
+@auth_basic(check_auth)
+def submit_publication():
+    pass
+
+
 @route("/")
-def index():
+def description_page():
     with open(join(TEMPLATE_PATH, "index.html")) as f:
         return f.read()
 
