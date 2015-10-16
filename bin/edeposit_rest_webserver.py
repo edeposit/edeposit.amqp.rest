@@ -12,9 +12,14 @@ from os.path import join
 from os.path import dirname
 
 from bottle import run
+from bottle import get
+from bottle import post
 from bottle import route
+from bottle import request
 from bottle import auth_basic
 from bottle import SimpleTemplate
+
+from bottle_rest import form_to_params
 
 sys.path.insert(0, join(dirname(__file__), "../src/edeposit/amqp"))
 
@@ -50,10 +55,11 @@ def track_publications():
     pass
 
 
-@route(join(V1_PATH, "submit"))
+@post(join(V1_PATH, "submit"))
+@form_to_params
 @auth_basic(check_auth)
 def submit_publication():
-    pass
+    request.body.readlines()
 
 
 @route("/")
