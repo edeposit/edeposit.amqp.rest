@@ -32,7 +32,9 @@ except ImportError:
 
 
 # Variables ===================================================================
-TEMPLATE_PATH = join(dirname(__file__), "../src/edeposit/amqp/rest/templates")
+TEMPLATE_PATH = join(
+    dirname(__file__), "../src/edeposit/amqp/rest/html_templates"
+)
 V1_PATH = "/api/v1/"
 
 
