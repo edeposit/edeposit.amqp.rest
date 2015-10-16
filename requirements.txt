@@ -1,3 +1,4 @@
 paste
 bottle
 bottle-rest
+edeposit.amqp.models
