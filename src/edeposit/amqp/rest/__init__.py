@@ -4,6 +4,10 @@
 # Interpreter version: python 2.7
 #
 # Imports =====================================================================
+from structures import SaveLogin
+from structures import RemoveLogin
+from structures import StatusUpdate
+from structures import UploadRequest
 
 
 # Functions & classes =========================================================
