@@ -35,15 +35,18 @@ def init_zeo():
 
 
 class ZEOWrapper(object):
-    def __init__(self, conf_path, project_key):
+    def __init__(self, conf_path, project_key, run_asyncore_thread=True):
         self.conf_path = conf_path
         self.project_key = project_key
         self.default_type = OOBTree
+        self.run_asyncore_thread = run_asyncore_thread
 
         self._db_root = None
         self._connection = None
 
-        init_zeo()
+        if run_asyncore_thread:
+            init_zeo()
+
         self._open_connection()
         self._get_zeo_root()
 
