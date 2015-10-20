@@ -45,8 +45,6 @@ class ZEOConfWrapper(object):
             ZEO structure.
         default_type (obj): Default data object used for root, if the root
             wasn't already created in ZEO.
-        run_asyncore_thread (bool): Run external asyncore thread, which handles
-            connections to database? Default True.
     """
     def __init__(self, conf_path, project_key, run_asyncore_thread=True):
         """
@@ -55,13 +53,12 @@ class ZEOConfWrapper(object):
         Args:
             conf_path (str): See :attr:`conf_path`.
             project_key (str): See :attr:`project_key`.
-            run_asyncore_thread (bool, default True): See
-                :attr:`run_asyncore_thread`.
+            run_asyncore_thread (bool, default True): Run external asyncore
+                thread, which handles connections to database? Default True.
         """
         self.conf_path = conf_path
         self.project_key = project_key
         self.default_type = OOBTree
-        self.run_asyncore_thread = run_asyncore_thread
 
         self._db_root = None  # Reference to the root of the database.
         self._connection = None  #: Internal handler for the ZEO connection.
