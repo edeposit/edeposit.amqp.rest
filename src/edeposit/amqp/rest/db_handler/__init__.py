@@ -21,55 +21,92 @@ ASYNCORE_RUNNING = False
 
 
 # Functions & classes =========================================================
-def init_zeo():
-    if ASYNCORE_RUNNING:
-        return
+def _init_zeo():
+    """
+    Start asyncore thread
+    """
+    if not ASYNCORE_RUNNING:
+        def _run_asyncore_loop():
+            asyncore.loop()
 
-    def run_asyncore_loop():
-        asyncore.loop()
+        thread.start_new_thread(_run_asyncore_loop, ())
 
-    thread.start_new_thread(run_asyncore_loop, ())
-
-    global ASYNCORE_RUNNING
-    ASYNCORE_RUNNING = True
+        global ASYNCORE_RUNNING
+        ASYNCORE_RUNNING = True
 
 
-class ZEOWrapper(object):
+class ZEOConfWrapper(object):
+    """
+    ZEO wrapper based on ZEO client XML configuration file.
+
+    Attributes:
+        conf_path (str): Path to the configuration file.
+        project_key (str): Project key, under which will this object access the
+            ZEO structure.
+        default_type (obj): Default data object used for root, if the root
+            wasn't already created in ZEO.
+        run_asyncore_thread (bool): Run external asyncore thread, which handles
+            connections to database? Default True.
+    """
     def __init__(self, conf_path, project_key, run_asyncore_thread=True):
+        """
+        Initialize the object.
+
+        Args:
+            conf_path (str): See :attr:`conf_path`.
+            project_key (str): See :attr:`project_key`.
+            run_asyncore_thread (bool, default True): See
+                :attr:`run_asyncore_thread`.
+        """
         self.conf_path = conf_path
         self.project_key = project_key
         self.default_type = OOBTree
         self.run_asyncore_thread = run_asyncore_thread
 
-        self._db_root = None
-        self._connection = None
+        self._db_root = None  # Reference to the root of the database.
+        self._connection = None  #: Internal handler for the ZEO connection.
 
         if run_asyncore_thread:
-            init_zeo()
+            _init_zeo()
 
         self._open_connection()
-        self._get_zeo_root()
+        self._init_zeo_root()
 
     def _on_close_callback(self):
+        """
+        When the connection is closed, open it again and get new reference to
+        ZEO root.
+        """
         self._open_connection()
-        self._get_zeo_root()
+        self._init_zeo_root()
 
     def _open_connection(self):
+        """
+        Open the connection to the database based on the configuration file.
+        """
         db = DB(storageFromFile(open(self.conf_path)))
         self._connection = db.open()
 
         self._connection.onCloseCallback(self._on_close_callback)
 
-    def _get_zeo_root(self, counter=3):
+    def _init_zeo_root(self, attempts=3):
+        """
+        Get and initialize the ZEO root object.
+
+        Args:
+            attempts (int, default 3): How many times to try, if the connection
+                was lost.
+        """
         try:
             dbroot = self._connection.root()
         except ConnectionStateError:
-            if counter <= 0:
+            if attempts <= 0:
                 raise
 
             self._open_connection()
-            return self._get_zeo_root(counter=counter-1)
+            return self._init_zeo_root(attempts=attempts-1)
 
+        # init the root, if it wasn't already declared
         if self.project_key not in dbroot:
             with transaction.manager:
                 dbroot[self.project_key] = self.default_type()
@@ -77,6 +114,17 @@ class ZEOWrapper(object):
         self._db_root = dbroot[self.project_key]
 
     def sync(self):
+        """
+        Sync the connection.
+
+        Warning:
+            Don't use this method, if you are in the middle of transaction, or
+            the transaction will be aborted.
+
+        Note:
+            You don't have to use this when you set :attr:`run_asyncore_thread`
+            to ``True``.
+        """
         self._connection.sync()
 
     def __getitem__(self, key):
