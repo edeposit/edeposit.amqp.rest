@@ -49,3 +49,13 @@ def test_storing_and_retreiving():
         assert first_wrapper["something"] == "hello"
 
     assert second_wrapper["something"] == "hello"
+
+
+def test_storing(zeo_wrapper):
+    with transaction.manager:
+        zeo_wrapper["something"] = "hello"
+
+
+def test_retreiving(zeo_wrapper):
+    with transaction.manager:
+        assert zeo_wrapper["something"] == "hello"
