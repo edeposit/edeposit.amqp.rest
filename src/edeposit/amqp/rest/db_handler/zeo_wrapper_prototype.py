@@ -75,7 +75,7 @@ class ZEOWrapperPrototype(object):
         """
         This should return the ZODB database object.
         """
-        raise NotImplementedError("Not implemented yet.")
+        raise NotImplementedError("._get_db() is not implemented yet.")
 
     def _open_connection(self):
         """
