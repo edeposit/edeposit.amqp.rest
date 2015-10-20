@@ -7,9 +7,8 @@
 import shutil
 import os.path
 import tempfile
-import subprocess
 
-import sh  # TODO: remove
+import sh
 
 from string import Template
 from multiprocessing import Process
@@ -53,12 +52,12 @@ def generate_environment():
 
     # write client config to temp directory
     client_config_path = os.path.join(TMP_DIR, "zeo_client.conf")
-    with open(client_config_path, "w") as f:
-        f.write(data_context("zeo_client.conf"))
+    shutil.copy(data_context_name("zeo_client.conf"), client_config_path)
 
     # run the ZEO server
     def run_zeo():
-        # subprocess.check_call("runzeo -C " + zeo_conf_path, shell=True)
+        # sh terminates when .terminate() is called, suprocess and os.system()
+        # doesn't
         sh.runzeo(C=zeo_conf_path)
 
     global SERV
