@@ -31,6 +31,8 @@ import os.path
 
 
 # Module configuration ========================================================
+ZEO_CONF_PATH = ""  #: Path to the ZEO configuration.
+PROJECT_KEY = "edeposit_rest"  #: Don't change this!
 
 WEB_ADDR = "localhost"  #: Address where the webserver should listen.
 WEB_PORT = 8080  #: Port for the webserver.
@@ -112,7 +114,6 @@ _read_from_paths()
 
 
 # # Checks ======================================================================
-# assert PUBLIC_DIR and PRIVATE_DIR and ARCHIVE_DIR, (
-#     "You have to set PUBLIC_DIR (%s), PRIVATE_DIR (%s), ARCHIVE_DIR (%s) "
-#     "values in your config!"
-# ) % (PUBLIC_DIR or "UNSET!", PRIVATE_DIR or "UNSET!", ARCHIVE_DIR or "UNSET!")
+assert ZEO_CONF_PATH, (
+    "You have to set ZEO_CONF_PATH (%s) values in your config!"
+) % (ZEO_CONF_PATH or "UNSET!")
