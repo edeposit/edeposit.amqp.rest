@@ -12,7 +12,7 @@ from zeo_connector_defaults import generate_environment
 from zeo_connector_defaults import cleanup_environment
 from zeo_connector_defaults import tmp_context_name
 
-from rest import DatabaseHandler
+from rest import UserHandler
 from rest.database import create_hash
 
 
@@ -28,8 +28,8 @@ def teardown_module(module):
 
 # Fixtures ====================================================================
 @pytest.fixture
-def db_obj():
-    return DatabaseHandler(
+def user_db():
+    return UserHandler(
         conf_path=tmp_context_name("zeo_client.conf"),
         project_key="key",
     )
@@ -37,7 +37,7 @@ def db_obj():
 
 # Tests =======================================================================
 def test_user_handling():
-    db1 = db_obj()
+    db1 = user_db()
 
     db1.add_user("foo", create_hash("bar"))
 
@@ -45,7 +45,7 @@ def test_user_handling():
     assert not db1.is_valid_user("foo", "baz")
     assert not db1.is_valid_user("f", "bar")
 
-    db2 = db_obj()
+    db2 = user_db()
 
     assert db2.is_valid_user("foo", "bar")
     assert not db2.is_valid_user("foo", "baz")
@@ -61,14 +61,14 @@ def test_user_handling():
 
 
 def test_multiple_users_creation():
-    db = db_obj()
+    db = user_db()
 
     for username in permutations("abcd", 4):
         db.add_user(username, create_hash(username * 2))
 
 
 def test_multiple_users_querying():
-    db = db_obj()
+    db = user_db()
 
     for username in permutations("abcd", 4):
         assert db.is_valid_user(username, username * 2)

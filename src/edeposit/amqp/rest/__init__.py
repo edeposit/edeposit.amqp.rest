@@ -9,7 +9,7 @@ from structures import RemoveLogin
 from structures import StatusUpdate
 from structures import UploadRequest
 
-from database import DatabaseHandler
+from database import UserHandler
 
 
 # Functions & classes =========================================================
