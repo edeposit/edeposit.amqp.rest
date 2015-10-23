@@ -4,6 +4,8 @@
 # Interpreter version: python 2.7
 #
 # Imports =====================================================================
+from itertools import permutations
+
 import pytest
 
 from zeo_connector_defaults import generate_environment
@@ -58,5 +60,15 @@ def test_user_handling():
         assert db2.is_valid_user("foo", "bar")
 
 
-def test_multiple_users_handling():
-    for i in 
+def test_multiple_users_creation():
+    db = db_obj()
+
+    for username in permutations("abcd", 4):
+        db.add_user(username, create_hash(username * 2))
+
+
+def test_multiple_users_querying():
+    db = db_obj()
+
+    for username in permutations("abcd", 4):
+        assert db.is_valid_user(username, username * 2)
