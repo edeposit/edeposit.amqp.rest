@@ -11,6 +11,7 @@ from zeo_connector_defaults import cleanup_environment
 from zeo_connector_defaults import tmp_context_name
 
 from rest import DatabaseHandler
+from rest.database import create_hash
 
 
 # Variables ===================================================================
@@ -33,5 +34,29 @@ def db_obj():
 
 
 # Tests =======================================================================
-def test_db(db_obj):
-    pass
+def test_user_handling():
+    db1 = db_obj()
+
+    db1.add_user("foo", create_hash("bar"))
+
+    assert db1.is_valid_user("foo", "bar")
+    assert not db1.is_valid_user("foo", "baz")
+    assert not db1.is_valid_user("f", "bar")
+
+    db2 = db_obj()
+
+    assert db2.is_valid_user("foo", "bar")
+    assert not db2.is_valid_user("foo", "baz")
+    assert not db2.is_valid_user("f", "bar")
+
+    db2.remove_user("foo")
+
+    assert not db1.is_valid_user("foo", "bar")
+    assert not db2.is_valid_user("foo", "bar")
+
+    with pytest.raises(AssertionError):
+        assert db2.is_valid_user("foo", "bar")
+
+
+def test_multiple_users_handling():
+    for i in 
