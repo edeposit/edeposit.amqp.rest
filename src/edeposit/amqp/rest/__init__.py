@@ -9,7 +9,8 @@ from structures import RemoveLogin
 from structures import StatusUpdate
 from structures import UploadRequest
 
-from database import UserHandler
+import settings
+from database import UserHandler as _UserHandler
 
 
 # Functions & classes =========================================================
@@ -41,6 +42,19 @@ def reactToAMQPMessage(message, send_back):
     Raises:
         ValueError: if bad type of `message` structure is given.
     """
+    user_db = _UserHandler(
+        conf_path=settings.ZEO_CONF_PATH,
+        project_key=settings.PROJECT_KEY,
+    )
 
+    if _instanceof(message, SaveLogin):
+        return user_db.add_user(
+            username=message.username,
+            pw_hash=message.password_hash,
+        )
+    elif _instanceof(message, SaveLogin):
+        return user_db.remove_user(
+            username=message.username
+        )
 
     raise ValueError("'%s' is unknown type of request!" % str(type(message)))
