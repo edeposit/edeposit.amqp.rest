@@ -9,12 +9,12 @@ from collections import namedtuple
 
 # Variables ===================================================================
 # Functions & classes =========================================================
-class SaveLogin():
+class SaveLogin(namedtuple("SaveLogin", ["username", "password_hash"])):
     """
     """
 
 
-class RemoveLogin():
+class RemoveLogin(namedtuple("RemoveLogin", ["username"])):
     """
     """
 
