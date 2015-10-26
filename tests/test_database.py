@@ -59,16 +59,24 @@ def test_user_handling():
     with pytest.raises(AssertionError):
         assert db2.is_valid_user("foo", "bar")
 
+    db1.add_user("foo", create_hash("bar"))
 
-def test_multiple_users_creation():
-    db = user_db()
 
+def test_multiple_users_creation(user_db):
     for username in permutations("abcd", 4):
-        db.add_user(username, create_hash(username * 2))
+        user_db.add_user(username, create_hash(username * 2))
 
 
-def test_multiple_users_querying():
-    db = user_db()
-
+def test_multiple_users_querying(user_db):
     for username in permutations("abcd", 4):
-        assert db.is_valid_user(username, username * 2)
+        assert user_db.is_valid_user(username, username * 2)
+
+
+def test_is_registered(user_db):
+    assert user_db.is_registered("foo")
+    assert not user_db.is_registered("bar")
+
+
+def test_is_valid_user_hashed(user_db):
+    assert user_db.is_valid_user_hashed("foo", create_hash("bar"))
+    assert not user_db.is_valid_user_hashed("foo", "bar")
