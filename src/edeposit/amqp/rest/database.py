@@ -119,6 +119,19 @@ class UserHandler(DatabaseHandler):
             hashed_password=hashing_mechanism(password)
         )
 
+    def is_registered(self, username):
+        """
+        Is the `username` registered in system?
+
+        Args:
+            username (str): User's name. Case sensitive.
+
+        Returns:
+            bool: True if the user is registered.
+        """
+        with transaction.manager:
+            return username in self.users
+
 
 class StatusHandler(DatabaseHandler):
     def __init__(self, conf_path, project_key):
