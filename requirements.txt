@@ -1,5 +1,5 @@
 paste
 bottle
 bottle-rest
-zeo_connector
+zeo_connector>=0.4.0
 edeposit.amqp.models
