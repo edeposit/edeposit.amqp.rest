@@ -19,6 +19,9 @@ class RemoveLogin(namedtuple("RemoveLogin", ["username"])):
     """
 
 
-class StatusUpdate():
+class StatusUpdate(namedtuple("StatusUpdate", ["rest_id",
+                                               "timestamp",
+                                               "message",
+                                               "pub_url"])):
     """
     """
