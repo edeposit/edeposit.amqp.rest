@@ -12,8 +12,8 @@ from zeo_connector_defaults import generate_environment
 from zeo_connector_defaults import cleanup_environment
 from zeo_connector_defaults import tmp_context_name
 
-from rest import UserHandler
-from rest.database import create_hash
+from rest.database import UserHandler
+from rest.database.user_handler import create_hash
 
 
 # Variables ===================================================================

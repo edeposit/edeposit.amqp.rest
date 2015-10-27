@@ -4,46 +4,14 @@
 # Interpreter version: python 2.7
 #
 # Imports =====================================================================
-from BTrees.OOBTree import OOBTree
-
 import transaction
-from zeo_connector import ZEOConfWrapper
+
+from database_handler import DatabaseHandler
 
 
-# Variables ===================================================================
 # Functions & classes =========================================================
 def create_hash(password):
     return str(hash(password))  # TODO: change to cryptographic hashing function
-
-
-class DatabaseHandler(object):
-    """
-    Define interfaces to the database, configuration and so on.
-
-    Attributes:
-        conf_path (str): Path to the ZEO client XML configuration.
-        project_key (str): Project key, which is used to access ZEO.
-        zeo (obj): :class:`.ZEOConfWrapper` database object.
-    """
-    def __init__(self, conf_path, project_key):
-        self.conf_path = conf_path
-        self.project_key = project_key
-
-        self.zeo = None
-        self._reload_zeo()
-
-    def _reload_zeo(self):
-        self.zeo = ZEOConfWrapper(self.conf_path, self.project_key)
-
-    def _get_key_or_create(self, key, obj_type=OOBTree):
-        with transaction.manager:
-            key_obj = self.zeo.get(key, None)
-
-            if key_obj is None:
-                key_obj = obj_type()
-                self.zeo[key] = key_obj
-
-            return key_obj
 
 
 class UserHandler(DatabaseHandler):
@@ -135,21 +103,3 @@ class UserHandler(DatabaseHandler):
         """
         with transaction.manager:
             return username in self.users
-
-
-class StatusHandler(DatabaseHandler):
-    def __init__(self, conf_path, project_key):
-        super(self.__class__, self).__init__(
-            conf_path=conf_path,
-            project_key=project_key
-        )
-
-        # read the proper index
-        self.status_key = "status"
-        self.status = self._get_key_or_create(self.status_key)
-
-    def save_status_update(self, status):
-        pass
-
-    def query_status(self, book_id):
-        pass
