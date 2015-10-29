@@ -26,9 +26,11 @@ sys.path.insert(0, join(dirname(__file__), "../src/edeposit/amqp"))
 try:
     # from rest import zconf
     from rest import settings
+    from rest.database import UserHandler
 except ImportError:
     # from edeposit.amqp.rest import zconf
     from edeposit.amqp.rest import settings
+    from edeposit.amqp.rest.database import UserHandler
 
 
 # Variables ===================================================================
