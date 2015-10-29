@@ -31,7 +31,7 @@ import os.path
 
 
 # Module configuration ========================================================
-ZEO_CONF_PATH = ""  #: Path to the ZEO configuration.
+ZEO_CLIENT_CONF_FILE = ""  #: Path to the ZEO configuration.
 PROJECT_KEY = "edeposit_rest"  #: Don't change this!
 
 WEB_ADDR = "localhost"  #: Address where the webserver should listen.
@@ -114,6 +114,6 @@ _read_from_paths()
 
 
 # # Checks ======================================================================
-assert ZEO_CONF_PATH, (
-    "You have to set ZEO_CONF_PATH (%s) values in your config!"
-) % (ZEO_CONF_PATH or "UNSET!")
+assert ZEO_CLIENT_CONF_FILE, (
+    "You have to set ZEO_CLIENT_CONF_FILE (%s) values in your config!"
+) % (ZEO_CLIENT_CONF_FILE or "UNSET!")

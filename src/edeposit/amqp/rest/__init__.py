@@ -43,7 +43,7 @@ def reactToAMQPMessage(message, send_back):
         ValueError: if bad type of `message` structure is given.
     """
     user_db = _UserHandler(
-        conf_path=settings.ZEO_CONF_PATH,
+        conf_path=settings.ZEO_CLIENT_CONF_FILE,
         project_key=settings.PROJECT_KEY,
     )
 
