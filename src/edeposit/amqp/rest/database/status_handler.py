@@ -10,6 +10,11 @@ from persistent import Persistent
 from database_handler import DatabaseHandler
 
 
+# Exceptions ==================================================================
+class AccessDeniedException(ValueError):
+    pass
+
+
 # Functions & classes =========================================================
 class SatusMessage(Persistent):
     def __init__(self, message, timestamp):
@@ -79,6 +84,7 @@ class StatusHandler(DatabaseHandler):
         with transaction.manager:
             status_info_obj = self.status_db.get(rest_id, None)
 
+            # if the `rest_id` is not registered for tracking, just ignore it
             if not status_info_obj:
                 return
 
@@ -94,14 +100,14 @@ class StatusHandler(DatabaseHandler):
 
         if not db_username:
             raise IndexError(
-                "%s is not registered to receive status updates for %s" % (
-                    username,
-                    rest_id
-                )
+                "Item '%s' is not registered to receive status updates for"
+                "'%s'!" % (username, rest_id)
             )
 
         if username != db_username:
-            raise ..
+            raise AccessDeniedException(
+                "Item '%s' is not owned by '%s'!" % (rest_id, username)
+            )
 
         if not status_info_obj:
             return []
