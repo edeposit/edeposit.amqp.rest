@@ -47,6 +47,15 @@ class StatusInfo(Persistent):
     def get_messages(self):
         return sorted(self.messages, key=lambda x: x.timestamp)
 
+    def __eq__(self, obj):
+        return self.rest_id == obj.rest_id and self.messages == obj.messages
+
+    def __ne__(self, obj):
+        return not self.__eq__(obj)
+
+    def __cmp__(self, obj):
+        return self.registered_ts.__cmp__(self, obj.registered_ts)
+
 
 class StatusHandler(DatabaseHandler):
     def __init__(self, conf_path, project_key):
