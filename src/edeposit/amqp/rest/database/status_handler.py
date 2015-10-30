@@ -69,12 +69,13 @@ class StatusHandler(DatabaseHandler):
             project_key=project_key
         )
 
-        # read the proper index
+        # index for StatusInfo objects
         self.status_db_key = "status"
         self.status_db = self._get_key_or_create(self.status_db_key)
 
-        self.id_to_username = {}
-        self.unregistered_statuses = {}
+        # index for mapping id->username
+        self.status_id_key = "status_id"
+        self.id_to_username = self._get_key_or_create(self.status_id_key)
 
     def register_status_tracking(self, username, rest_id):
         with transaction.manager:
