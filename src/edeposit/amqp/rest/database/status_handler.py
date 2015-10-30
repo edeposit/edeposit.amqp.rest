@@ -122,21 +122,21 @@ class StatusHandler(DatabaseHandler):
             status_info_obj = self.status_db.get(rest_id, None)
             db_username = self.id_to_username.get(username, None)
 
-        if not db_username:
-            raise IndexError(
-                "Item '%s' is not registered to receive status updates for"
-                "'%s'!" % (username, rest_id)
-            )
+            if not db_username:
+                raise IndexError(
+                    "Item '%s' is not registered to receive status updates for"
+                    "'%s'!" % (username, rest_id)
+                )
 
-        if username != db_username:
-            raise AccessDeniedException(
-                "Item '%s' is not owned by '%s'!" % (rest_id, username)
-            )
+            if username != db_username:
+                raise AccessDeniedException(
+                    "Item '%s' is not owned by '%s'!" % (rest_id, username)
+                )
 
-        if not status_info_obj:
-            return []
+            if not status_info_obj:
+                return []
 
-        return status_info_obj.get_messages()
+            return status_info_obj.get_messages()
 
     def query_statuses(self, username):
         with transaction.manager:
