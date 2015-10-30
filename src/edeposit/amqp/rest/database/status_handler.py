@@ -23,7 +23,7 @@ class SatusMessage(Persistent):
         return not self.__eq__(obj)
 
     def __hash__(self):
-        return hash("%d%s" % (self.timestamp, self.message))
+        return hash((self.timestamp, self.message))
 
     def __cmp__(self, obj):
         return self.timestamp.__cmp__(self, obj.timestamp)
