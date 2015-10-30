@@ -10,6 +10,12 @@ from persistent import Persistent
 from database_handler import DatabaseHandler
 
 
+# Variables ===================================================================
+DAY = 60 * 60 * 24
+MONTH = DAY * 30
+YEAR = DAY * 365
+
+
 # Exceptions ==================================================================
 class AccessDeniedException(ValueError):
     pass
@@ -114,3 +120,12 @@ class StatusHandler(DatabaseHandler):
             return []
 
         return status_info_obj.get_messages()
+
+    def query_statuses(self, username):
+        pass
+
+    def remove_status_info(self, rest_id):
+        pass
+
+    def garbage_collection(self, interval=YEAR/2):
+        pass
