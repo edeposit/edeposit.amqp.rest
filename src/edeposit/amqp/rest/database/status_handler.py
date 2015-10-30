@@ -6,6 +6,7 @@
 # Imports =====================================================================
 import transaction
 from persistent import Persistent
+from BTrees.OOBTree import OOSet
 
 from database_handler import DatabaseHandler
 
@@ -80,12 +81,28 @@ class StatusHandler(DatabaseHandler):
         self.status_db = self._get_key_or_create(self.status_db_key)
 
         # index for mapping id->username
-        self.status_id_key = "status_id"
+        self.status_id_key = "status id->username"
         self.id_to_username = self._get_key_or_create(self.status_id_key)
+
+        # index for mapping username->ids
+        self.status_username_key = "status username->ids"
+        self.username_to_ids = self._get_key_or_create(
+            self.status_username_key
+        )
 
     def register_status_tracking(self, username, rest_id):
         with transaction.manager:
+            # handle id->username mapping
             self.id_to_username[rest_id] = username
+
+            # handle username->ids mapping
+            uname_to_ids = self.username_to_ids.get(username, None)
+            if uname_to_ids is None:
+                uname_to_ids = OOSet()
+                self.username_to_ids = uname_to_ids
+
+            # add new rest_id to set
+            uname_to_ids.add(rest_id)
 
     def save_status_update(self, rest_id, message, timestamp, pub_url=None):
         with transaction.manager:
