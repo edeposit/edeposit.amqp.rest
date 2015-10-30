@@ -139,7 +139,21 @@ class StatusHandler(DatabaseHandler):
         return status_info_obj.get_messages()
 
     def query_statuses(self, username):
-        pass
+        with transaction.manager:
+            uname_to_ids = self.username_to_ids.get(username, None)
+
+            if uname_to_ids is None:
+                raise ValueError(
+                    "Username '%s' is not registered for tracking!" % username
+                )
+
+            return [
+                status_update.get_messages()
+                for status_update in sorted(
+                    uname_to_ids,
+                    key=lambda x: x.registered_ts
+                )
+            ]
 
     def remove_status_info(self, rest_id):
         pass
