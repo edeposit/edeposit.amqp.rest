@@ -6,7 +6,6 @@
 # Imports =====================================================================
 import pytest
 
-
 from zeo_connector_defaults import generate_environment
 from zeo_connector_defaults import cleanup_environment
 
