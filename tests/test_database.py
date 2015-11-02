@@ -8,22 +8,10 @@ from itertools import permutations
 
 import pytest
 
-from zeo_connector_defaults import generate_environment
-from zeo_connector_defaults import cleanup_environment
 from zeo_connector_defaults import tmp_context_name
 
 from rest.database import UserHandler
 from rest.database.user_handler import create_hash
-
-
-# Variables ===================================================================
-# Setup =======================================================================
-def setup_module(module):
-    generate_environment()
-
-
-def teardown_module(module):
-    cleanup_environment()
 
 
 # Fixtures ====================================================================
