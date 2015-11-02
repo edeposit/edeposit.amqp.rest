@@ -11,6 +11,7 @@ import pytest
 from zeo_connector_defaults import tmp_context_name
 
 from rest.database import StatusHandler
+from rest.database.status_handler import StatusInfo
 from rest.database.status_handler import SatusMessage
 
 
@@ -35,6 +36,14 @@ def test_status_message():
     s_set = set([s1, s2, s1_])
 
     assert s_set == set([s1, s2])
+
+    assert sorted([s2, s1]) == [s1, s2]
+
+
+def test_status_info():
+    rest_id = "some id"
+
+    si = StatusInfo(rest_id=rest_id)
 
 
 # def test_something(status_handler):

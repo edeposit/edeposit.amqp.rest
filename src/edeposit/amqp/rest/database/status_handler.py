@@ -5,6 +5,7 @@
 #
 # Imports =====================================================================
 import time
+from functools import total_ordering
 
 import transaction
 from persistent import Persistent
@@ -25,6 +26,7 @@ class AccessDeniedException(ValueError):
 
 
 # Functions & classes =========================================================
+@total_ordering
 class SatusMessage(Persistent):
     def __init__(self, message, timestamp):
         self.message = message.strip()
@@ -39,10 +41,11 @@ class SatusMessage(Persistent):
     def __hash__(self):
         return hash((self.timestamp, self.message))
 
-    def __cmp__(self, obj):
-        return self.timestamp.__cmp__(self, obj.timestamp)
+    def __lt__(self, obj):
+        return self.timestamp.__lt__(obj.timestamp)
 
 
+@total_ordering
 class StatusInfo(Persistent):
     def __init__(self, rest_id, pub_url=None, registered_ts=None):
         self.rest_id = rest_id
@@ -70,8 +73,8 @@ class StatusInfo(Persistent):
     def __ne__(self, obj):
         return not self.__eq__(obj)
 
-    def __cmp__(self, obj):
-        return self.registered_ts.__cmp__(self, obj.registered_ts)
+    def __lt__(self, obj):
+        return self.registered_ts.__lt__(obj.registered_ts)
 
 
 class StatusHandler(DatabaseHandler):
