@@ -4,6 +4,8 @@
 # Interpreter version: python 2.7
 #
 # Imports =====================================================================
+import time
+
 import transaction
 from persistent import Persistent
 from BTrees.OOBTree import OOSet
@@ -89,6 +91,9 @@ class StatusHandler(DatabaseHandler):
         self.username_to_ids = self._get_key_or_create(
             self.status_username_key
         )
+
+    def log(self, msg): #: TODO: implement
+        pass
 
     def register_status_tracking(self, username, rest_id):
         with transaction.manager:
@@ -189,5 +194,20 @@ class StatusHandler(DatabaseHandler):
                 if not self.username_to_ids[username]:
                     del self.username_to_ids[username]
 
-    def garbage_collection(self, interval=YEAR/2):
-        pass
+    def trigger_garbage_collection(self, interval=YEAR/2):
+        with transaction.manager:
+            garbage_rest_ids = [
+                status_info.rest_id
+                for status_info in self.status_db.values()
+                if status_info.registered_ts + interval >= time.time()
+            ]
+
+        self.log(
+            "Garbage collection triggered. Cleaning %d objects: %s" % (
+                len(garbage_rest_ids),
+                ", ".join(garbage_rest_ids)
+            )
+        )
+
+        for rest_id in garbage_rest_ids:
+            self.remove_status_info(rest_id)
