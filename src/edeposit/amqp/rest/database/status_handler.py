@@ -155,8 +155,39 @@ class StatusHandler(DatabaseHandler):
                 )
             ]
 
-    def remove_status_info(self, rest_id):
-        pass
+    def remove_status_info(self, rest_id, username=None):
+        with transaction.manager:
+            # check privileges of `username` to access `rest_id`
+            if username:
+                if rest_id not in self.username_to_ids.get(username, []):
+                    raise AccessDeniedException(
+                        "Can't delete '%s' - invalid owner '%s'." % (
+                            rest_id,
+                            username,
+                        )
+                    )
+
+            # remove StatusInfo object
+            if rest_id in self.status_db:
+                del self.status_db[rest_id]
+
+            # remove from id->username mapping
+            stored_username = self.id_to_username.get(rest_id, None)
+            if stored_username:
+                del self.id_to_username[stored_username]
+                username = stored_username
+
+            # remove from username->ids mapping
+            if username:
+                ids = self.username_to_ids.get(username, None)
+
+                # remove `rest_id` from ids
+                if ids is not None and rest_id in ids:
+                    self.username_to_ids[username].remove(rest_id)
+
+                # remove empty sets of ids
+                if not self.username_to_ids[username]:
+                    del self.username_to_ids[username]
 
     def garbage_collection(self, interval=YEAR/2):
         pass
