@@ -44,11 +44,14 @@ class SatusMessage(Persistent):
 
 
 class StatusInfo(Persistent):
-    def __init__(self, rest_id, pub_url, registered_ts):
+    def __init__(self, rest_id, pub_url=None, registered_ts=None):
         self.rest_id = rest_id
         self.pub_url = pub_url
         self.messages = set()
         self.registered_ts = registered_ts
+
+        if not registered_ts:
+            self.registered_ts = time.time()
 
     def add_status_message(self, status_message):
         self.messages.add(status_message)
@@ -108,6 +111,8 @@ class StatusHandler(DatabaseHandler):
 
             # add new rest_id to set
             uname_to_ids.add(rest_id)
+
+            self.status_db[rest_id] = StatusInfo(rest_id=rest_id)
 
     def save_status_update(self, rest_id, message, timestamp, pub_url=None):
         with transaction.manager:
