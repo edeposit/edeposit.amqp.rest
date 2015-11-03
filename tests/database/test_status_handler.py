@@ -15,6 +15,11 @@ from rest.database.status_handler import StatusInfo
 from rest.database.status_handler import SatusMessage
 
 
+# Variables ===================================================================
+USERNAME = "pepa"
+REST_ID = "some id"
+
+
 # Fixtures ====================================================================
 @pytest.fixture
 def status_handler():
@@ -41,10 +46,8 @@ def test_status_message():
 
 
 def test_status_info_comparing():
-    rest_id = "some id"
-
-    s1 = StatusInfo(rest_id=rest_id)
-    s2 = StatusInfo(rest_id=rest_id)
+    s1 = StatusInfo(rest_id=REST_ID)
+    s2 = StatusInfo(rest_id=REST_ID)
 
     assert s1 == s2
 
@@ -56,7 +59,7 @@ def test_status_info_comparing():
 
 
 def test_status_info_get_messages():
-    si = StatusInfo(rest_id="some id")
+    si = StatusInfo(rest_id=REST_ID)
 
     params = ("second", time.time())
     si.add_message(*params)
@@ -65,15 +68,20 @@ def test_status_info_get_messages():
 
 
 def test_status_info_sorting():
-    s1 = StatusInfo(rest_id="some id")
-    s2 = StatusInfo(rest_id="some id")
+    s1 = StatusInfo(rest_id=REST_ID)
+    s2 = StatusInfo(rest_id=REST_ID)
 
     assert sorted([s2, s1]) == [s1, s2]
 
-    s1 = StatusInfo(rest_id="some id", registered_ts=1)
-    s2 = StatusInfo(rest_id="some id")
+    s1 = StatusInfo(rest_id=REST_ID, registered_ts=1)
+    s2 = StatusInfo(rest_id=REST_ID)
 
     assert sorted([s2, s1]) == [s1, s2]
 
-# def test_something(status_handler):
-#     pass
+
+def test_status_handler(status_handler):
+    with pytest.raises(IndexError):
+        status_handler.query_statuses(USERNAME)
+
+    status_handler.register_status_tracking(USERNAME, REST_ID)
+    assert status_handler.query_statuses(USERNAME) == {REST_ID: []}
