@@ -182,12 +182,12 @@ class StatusHandler(DatabaseHandler):
     def query_status(self, username, rest_id):
         with transaction.manager:
             status_info_obj = self.status_db.get(rest_id, None)
-            db_username = self.id_to_username.get(username, None)
+            db_username = self.id_to_username.get(rest_id, None)
 
             if not db_username:
                 raise IndexError(
-                    "Item '%s' is not registered to receive status updates for"
-                    "'%s'!" % (username, rest_id)
+                    "User '%s' is not registered to receive status updates for"
+                    " '%s'!" % (username, rest_id)
                 )
 
             if username != db_username:
