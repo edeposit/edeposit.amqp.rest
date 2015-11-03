@@ -30,7 +30,7 @@ class AccessDeniedException(ValueError):
 class SatusMessage(Persistent):
     def __init__(self, message, timestamp):
         self.message = message.strip()
-        self.timestamp = timestamp
+        self.timestamp = float(timestamp)
 
     def __eq__(self, obj):
         return self.message == obj.message and self.timestamp == obj.timestamp
@@ -51,10 +51,11 @@ class StatusInfo(Persistent):
         self.rest_id = rest_id
         self.pub_url = pub_url
         self.messages = set()
-        self.registered_ts = registered_ts
 
         if not registered_ts:
             self.registered_ts = time.time()
+        else:
+            self.registered_ts = float(registered_ts)  # for __lt__ operator
 
     def add_status_message(self, status_message):
         self.messages.add(status_message)
