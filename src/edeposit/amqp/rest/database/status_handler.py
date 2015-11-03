@@ -111,7 +111,7 @@ class StatusHandler(DatabaseHandler):
             uname_to_ids = self.username_to_ids.get(username, None)
             if uname_to_ids is None:
                 uname_to_ids = OOSet()
-                self.username_to_ids = uname_to_ids
+                self.username_to_ids[username] = uname_to_ids
 
             # add new rest_id to set
             uname_to_ids.add(rest_id)
@@ -154,20 +154,30 @@ class StatusHandler(DatabaseHandler):
 
     def query_statuses(self, username):
         with transaction.manager:
-            uname_to_ids = self.username_to_ids.get(username, None)
+            ids = self.username_to_ids.get(username, None)
 
-            if uname_to_ids is None:
-                raise ValueError(
+            if ids is None:
+                raise IndexError(
                     "Username '%s' is not registered for tracking!" % username
                 )
 
-            return [
-                status_update.get_messages()
-                for status_update in sorted(
-                    uname_to_ids,
-                    key=lambda x: x.registered_ts
-                )
-            ]
+            # convert list of rest_ids to StatusInfo objects from DB
+            status_infos = (
+                self.status_db.get(rest_id, None)
+                for rest_id in ids
+            )
+
+            # filter None elements
+            status_infos = (
+                status_info
+                for status_info in status_infos
+                if status_info is not None
+            )
+
+            return {
+                si.rest_id: si.get_messages()
+                for si in sorted(status_infos, key=lambda x: x.registered_ts)
+            }
 
     def remove_status_info(self, rest_id, username=None):
         with transaction.manager:
