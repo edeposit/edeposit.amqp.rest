@@ -54,6 +54,7 @@ def test_status_info_comparing():
 
     assert s1 != s2
 
+
 def test_status_info_get_messages():
     si = StatusInfo(rest_id="some id")
 
@@ -63,6 +64,16 @@ def test_status_info_get_messages():
     assert si.get_messages() == [SatusMessage(*params)]
 
 
+def test_status_info_sorting():
+    s1 = StatusInfo(rest_id="some id")
+    s2 = StatusInfo(rest_id="some id")
+
+    assert sorted([s2, s1]) == [s1, s2]
+
+    s1 = StatusInfo(rest_id="some id", registered_ts=1)
+    s2 = StatusInfo(rest_id="some id")
+
+    assert sorted([s2, s1]) == [s1, s2]
 
 # def test_something(status_handler):
 #     pass
