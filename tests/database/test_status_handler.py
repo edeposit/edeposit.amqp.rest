@@ -12,7 +12,7 @@ from zeo_connector_defaults import tmp_context_name
 
 from rest.database import StatusHandler
 from rest.database.status_handler import StatusInfo
-from rest.database.status_handler import SatusMessage
+from rest.database.status_handler import StatusMessage
 
 
 # Variables ===================================================================
@@ -31,9 +31,9 @@ def status_handler():
 
 # Tests =======================================================================
 def test_status_message():
-    s1 = SatusMessage(message="first", timestamp=time.time())
-    s2 = SatusMessage(message="second", timestamp=time.time())
-    s1_ = SatusMessage(message="first", timestamp=s1.timestamp)
+    s1 = StatusMessage(message="first", timestamp=time.time())
+    s2 = StatusMessage(message="second", timestamp=time.time())
+    s1_ = StatusMessage(message="first", timestamp=s1.timestamp)
 
     assert s1 != s2
     assert s1 == s1_
@@ -51,7 +51,7 @@ def test_status_info_comparing():
 
     assert s1 == s2
 
-    sm1 = SatusMessage(message="first", timestamp=time.time())
+    sm1 = StatusMessage(message="first", timestamp=time.time())
 
     s1.add_status_message(sm1)
 
@@ -64,7 +64,7 @@ def test_status_info_get_messages():
     params = ("second", time.time())
     si.add_message(*params)
 
-    assert si.get_messages() == [SatusMessage(*params)]
+    assert si.get_messages() == [StatusMessage(*params)]
 
 
 def test_status_info_sorting():
