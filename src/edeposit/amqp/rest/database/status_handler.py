@@ -5,6 +5,7 @@
 #
 # Imports =====================================================================
 import time
+from collections import OrderedDict
 from functools import total_ordering
 
 import transaction
@@ -207,7 +208,7 @@ class StatusHandler(DatabaseHandler):
             username (str): Selected username.
 
         Returns:
-            dict: ``{rest_id: [messages]}``
+            OrderedDict: ``{rest_id: [messages]}``
         """
         with transaction.manager:
             ids = self.username_to_ids.get(username, None)
@@ -230,10 +231,10 @@ class StatusHandler(DatabaseHandler):
                 if status_info is not None
             )
 
-            return {
-                si.rest_id: si.get_messages()
+            return OrderedDict(
+                (si.rest_id, si.get_messages())
                 for si in sorted(status_infos, key=lambda x: x.registered_ts)
-            }
+            )
 
     def remove_status_info(self, rest_id, username=None):
         with transaction.manager:
