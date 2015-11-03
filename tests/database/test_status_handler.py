@@ -79,9 +79,23 @@ def test_status_info_sorting():
     assert sorted([s2, s1]) == [s1, s2]
 
 
-def test_status_handler(status_handler):
+def test_status_handler_register_status_tracking(status_handler):
     with pytest.raises(IndexError):
         status_handler.query_statuses(USERNAME)
 
     status_handler.register_status_tracking(USERNAME, REST_ID)
     assert status_handler.query_statuses(USERNAME) == {REST_ID: []}
+
+
+def test_status_handler_save_status_update(status_handler):
+    m = "Some message."
+    t = time.time()
+    status_handler.save_status_update(
+        rest_id=REST_ID,
+        message=m,
+        timestamp=t,
+        pub_url="http://..",
+    )
+
+    query = status_handler.query_statuses(USERNAME)
+    assert query == {REST_ID: [StatusMessage(m, t)]}
