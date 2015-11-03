@@ -13,6 +13,7 @@ from zeo_connector_defaults import tmp_context_name
 from rest.database import StatusHandler
 from rest.database.status_handler import StatusInfo
 from rest.database.status_handler import StatusMessage
+from rest.database.status_handler import AccessDeniedException
 
 
 # Variables ===================================================================
@@ -99,3 +100,23 @@ def test_status_handler_save_status_update(status_handler):
 
     query = status_handler.query_statuses(USERNAME)
     assert query == {REST_ID: [StatusMessage(m, t)]}
+
+    # this should do nothing - unregistered rest_id
+    status_handler.save_status_update(
+        rest_id="azgabash",
+        message=m,
+        timestamp=t,
+        pub_url="http://..",
+    )
+
+    query = status_handler.query_status(USERNAME, REST_ID)
+    assert query == [StatusMessage(m, t)]
+
+
+def test_query_status_exceptions(status_handler):
+    with pytest.raises(IndexError):
+        status_handler.query_status(USERNAME, "azgabash")
+
+    status_handler.register_status_tracking(USERNAME, "something_else")
+    with pytest.raises(AccessDeniedException):
+        status_handler.query_status("azgabash", REST_ID)
