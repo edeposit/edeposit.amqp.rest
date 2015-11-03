@@ -255,7 +255,7 @@ class StatusHandler(DatabaseHandler):
             # remove from id->username mapping
             stored_username = self.id_to_username.get(rest_id, None)
             if stored_username:
-                del self.id_to_username[stored_username]
+                del self.id_to_username[rest_id]
                 username = stored_username
 
             # remove from username->ids mapping
@@ -275,7 +275,7 @@ class StatusHandler(DatabaseHandler):
             garbage_rest_ids = [
                 status_info.rest_id
                 for status_info in self.status_db.values()
-                if status_info.registered_ts + interval >= time.time()
+                if status_info.registered_ts + interval <= time.time()
             ]
 
         self.log(
