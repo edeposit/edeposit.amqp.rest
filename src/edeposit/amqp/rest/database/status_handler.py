@@ -15,19 +15,28 @@ from database_handler import DatabaseHandler
 
 
 # Variables ===================================================================
-DAY = 60 * 60 * 24
-MONTH = DAY * 30
-YEAR = DAY * 365
+DAY = 60 * 60 * 24  #: Day in seconds.
+MONTH = DAY * 30  #: 30 day month in seconds.
+YEAR = DAY * 365  #: Year in seconds.
 
 
 # Exceptions ==================================================================
 class AccessDeniedException(ValueError):
-    pass
+    """
+    Exception raised in case that wrong username was given.
+    """
 
 
 # Functions & classes =========================================================
 @total_ordering
-class SatusMessage(Persistent):
+class StatusMessage(Persistent):
+    """
+    Message container used to hold `message` with `timestamp` in log stream.
+
+    Attributes:
+        message (str): Tracked message.
+        timestamp (float): Python timestamp format.
+    """
     def __init__(self, message, timestamp):
         self.message = message.strip()
         self.timestamp = float(timestamp)
@@ -47,25 +56,63 @@ class SatusMessage(Persistent):
 
 @total_ordering
 class StatusInfo(Persistent):
+    """
+    Object for logging :class:`StatusMessage` objects for given `rest_id`.
+
+    Attributes:
+        rest_id (str): REST id for which the messages are tracked.
+        pub_url (str): URL of the tracked ebook.
+        messages (list): List of :class:`StatusMessage` objects.
+        registered_ts (float): Python timestamp format.
+    """
     def __init__(self, rest_id, pub_url=None, registered_ts=None):
+        """
+        Constructor.
+
+        Args:
+            rest_id (str): See :attr:`rest_id`.
+            pub_url (str, default None): See :attr:`pub_url`.
+            registered_ts (float, default None): See :attr:`registered_ts`. If
+                not set, current time is used.
+        """
         self.rest_id = rest_id
         self.pub_url = pub_url
         self.messages = set()
 
-        if not registered_ts:
-            self.registered_ts = time.time()
-        else:
+        if registered_ts:
             self.registered_ts = float(registered_ts)  # for __lt__ operator
+        else:
+            self.registered_ts = time.time()
 
     def add_status_message(self, status_message):
+        """
+        Add `status_message` to internal log of messages.
+
+        Args:
+            status_message (obj): :class:`StatusMessage` instance.
+        """
         self.messages.add(status_message)
 
     def add_message(self, message, timestamp):
+        """
+        Add new :class:`StatusMessage` instance created from `message` and
+        `timestamp`.
+
+        Args:
+            message (str): Message which will be logged.
+            timestamp (float): Timestamp of the message.
+        """
         self.add_status_message(
-            SatusMessage(message, timestamp)
+            StatusMessage(message, timestamp)
         )
 
     def get_messages(self):
+        """
+        Return sorted list of :attr:`.messages`.
+
+        Returns:
+            list: :class`.StatusMessage` instances.
+        """
         return sorted(self.messages, key=lambda x: x.timestamp)
 
     def __eq__(self, obj):
@@ -153,6 +200,15 @@ class StatusHandler(DatabaseHandler):
             return status_info_obj.get_messages()
 
     def query_statuses(self, username):
+        """
+        Get informations about all trackings for given `username`.
+
+        Args:
+            username (str): Selected username.
+
+        Returns:
+            dict: ``{rest_id: [messages]}``
+        """
         with transaction.manager:
             ids = self.username_to_ids.get(username, None)
 
