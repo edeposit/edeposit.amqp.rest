@@ -19,6 +19,7 @@ from rest.database.status_handler import AccessDeniedException
 # Variables ===================================================================
 USERNAME = "pepa"
 REST_ID = "some id"
+ALT_REST_ID = "something_else"
 
 
 # Fixtures ====================================================================
@@ -113,10 +114,31 @@ def test_status_handler_save_status_update(status_handler):
     assert query == [StatusMessage(m, t)]
 
 
-def test_query_status_exceptions(status_handler):
+def test_status_handler_query_status_exceptions(status_handler):
     with pytest.raises(IndexError):
         status_handler.query_status(USERNAME, "azgabash")
 
-    status_handler.register_status_tracking(USERNAME, "something_else")
+    status_handler.register_status_tracking(USERNAME, ALT_REST_ID)
     with pytest.raises(AccessDeniedException):
         status_handler.query_status("azgabash", REST_ID)
+
+
+def test_status_handler_remove_status_info(status_handler):
+    assert ALT_REST_ID in status_handler.query_statuses(USERNAME)
+
+    with pytest.raises(AccessDeniedException):
+        status_handler.remove_status_info(
+            username="tona hluchonemec",
+            rest_id=ALT_REST_ID,
+        )
+
+    status_handler.remove_status_info(rest_id=ALT_REST_ID)
+
+    assert ALT_REST_ID not in status_handler.query_statuses(USERNAME)
+
+
+def test_status_handler_trigger_garbage_collection(status_handler):
+    status_handler.trigger_garbage_collection(interval=0)
+
+    with pytest.raises(IndexError):
+        status_handler.query_statuses(USERNAME)
