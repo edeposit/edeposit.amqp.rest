@@ -40,10 +40,28 @@ def test_status_message():
     assert sorted([s2, s1]) == [s1, s2]
 
 
-def test_status_info():
+def test_status_info_comparing():
     rest_id = "some id"
 
-    si = StatusInfo(rest_id=rest_id)
+    s1 = StatusInfo(rest_id=rest_id)
+    s2 = StatusInfo(rest_id=rest_id)
+
+    assert s1 == s2
+
+    sm1 = SatusMessage(message="first", timestamp=time.time())
+
+    s1.add_status_message(sm1)
+
+    assert s1 != s2
+
+def test_status_info_get_messages():
+    si = StatusInfo(rest_id="some id")
+
+    params = ("second", time.time())
+    si.add_message(*params)
+
+    assert si.get_messages() == [SatusMessage(*params)]
+
 
 
 # def test_something(status_handler):
