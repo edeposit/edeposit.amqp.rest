@@ -110,17 +110,21 @@ def test_status_handler_save_status_update(status_handler):
         pub_url="http://..",
     )
 
-    query = status_handler.query_status(USERNAME, REST_ID)
+    query = status_handler.query_status(REST_ID, USERNAME)
+    assert query == [StatusMessage(m, t)]
+
+    # and now without username
+    query = status_handler.query_status(REST_ID)
     assert query == [StatusMessage(m, t)]
 
 
 def test_status_handler_query_status_exceptions(status_handler):
     with pytest.raises(IndexError):
-        status_handler.query_status(USERNAME, "azgabash")
+        status_handler.query_status("azgabash", USERNAME)
 
     status_handler.register_status_tracking(USERNAME, ALT_REST_ID)
     with pytest.raises(AccessDeniedException):
-        status_handler.query_status("azgabash", REST_ID)
+        status_handler.query_status(REST_ID, "azgabash")
 
 
 def test_status_handler_remove_status_info(status_handler):

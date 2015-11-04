@@ -215,24 +215,26 @@ class StatusHandler(DatabaseHandler):
         status_info_obj.add_message(message, timestamp)
 
     @transaction_manager
-    def query_status(self, username, rest_id):  # TODO: make username non-required
+    def query_status(self, rest_id, username=None):
         """
         List all messages stored in given `rest_id` for given `username`.
 
         Args:
-            username (str): Name of the user.
             rest_id (str): Unique identificator of given REST request.
+            username (str, default None): Name of the user. If not set, the
+                username will not be checked.
         """
         status_info_obj = self.status_db.get(rest_id, None)
         db_username = self.id_to_username.get(rest_id, None)
 
         if not db_username:
             raise IndexError(
-                "User '%s' is not registered to receive status updates for"
-                " '%s'!" % (username, rest_id)
+                "ID '{}' is not registered to receive status updates.".format(
+                    rest_id
+                )
             )
 
-        if username != db_username:
+        if username and username != db_username:
             raise AccessDeniedException(
                 "Item '%s' is not owned by '%s'!" % (rest_id, username)
             )
