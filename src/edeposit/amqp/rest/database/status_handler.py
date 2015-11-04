@@ -64,21 +64,25 @@ class StatusInfo(Persistent):
     Attributes:
         rest_id (str): REST id for which the messages are tracked.
         pub_url (str): URL of the tracked ebook.
+        book_name (str): Name of the book in human readable form.
         messages (list): List of :class:`StatusMessage` objects.
         registered_ts (float): Python timestamp format.
     """
-    def __init__(self, rest_id, pub_url=None, registered_ts=None):
+    def __init__(self, rest_id, pub_url=None, book_name=None,
+                 registered_ts=None):
         """
         Constructor.
 
         Args:
             rest_id (str): See :attr:`rest_id`.
             pub_url (str, default None): See :attr:`pub_url`.
+            book_name (str, default None): See :attr:`book_name`.
             registered_ts (float, default None): See :attr:`registered_ts`. If
                 not set, current time is used.
         """
         self.rest_id = rest_id
         self.pub_url = pub_url
+        self.book_name = book_name
         self.messages = set()
 
         if registered_ts:
@@ -193,7 +197,8 @@ class StatusHandler(DatabaseHandler):
         self.status_db[rest_id] = StatusInfo(rest_id=rest_id)
 
     @transaction_manager
-    def save_status_update(self, rest_id, message, timestamp, pub_url=None):
+    def save_status_update(self, rest_id, message, timestamp, book_name=None,
+                           pub_url=None):
         """
         Save new status `message` to given `rest_id`.
 
@@ -211,6 +216,9 @@ class StatusHandler(DatabaseHandler):
 
         if pub_url:
             status_info_obj.pub_url = pub_url
+
+        if book_name:
+            status_info_obj.book_name = book_name
 
         status_info_obj.add_message(message, timestamp)
 
