@@ -127,7 +127,19 @@ class StatusInfo(Persistent):
 
 
 class StatusHandler(DatabaseHandler):
+    """
+    Database handler for tracking :class:`StatusInfo` and
+    :class:`StatusMessage` objects sent tru AMQP.
+    """
     def __init__(self, conf_path, project_key):
+        """
+        Constructor.
+
+        Args:
+            conf_path (str): Path to the ZEO client configuration file.
+            project_key (str): Project key used to access the StatusHandler's
+                data in DB dict.
+        """
         super(self.__class__, self).__init__(
             conf_path=conf_path,
             project_key=project_key
@@ -151,6 +163,13 @@ class StatusHandler(DatabaseHandler):
         pass
 
     def register_status_tracking(self, username, rest_id):
+        """
+        Register `username` for tracking states of given `rest_id`.
+
+        Args:
+            username (str): Name of the user.
+            rest_id (str): Unique identificator of given REST request.
+        """
         with transaction.manager:
             # handle id->username mapping
             self.id_to_username[rest_id] = username
@@ -167,6 +186,15 @@ class StatusHandler(DatabaseHandler):
             self.status_db[rest_id] = StatusInfo(rest_id=rest_id)
 
     def save_status_update(self, rest_id, message, timestamp, pub_url=None):
+        """
+        Save new status `message` to given `rest_id`.
+
+        Args:
+            rest_id (str): Unique identificator of given REST request.
+            message (str): Content of the status update.
+            timestamp (float): Python timestamp format.
+            pub_url (str, default None): URL of the publication in edeposit.
+        """
         with transaction.manager:
             status_info_obj = self.status_db.get(rest_id, None)
 
@@ -179,7 +207,14 @@ class StatusHandler(DatabaseHandler):
 
             status_info_obj.add_message(message, timestamp)
 
-    def query_status(self, username, rest_id):
+    def query_status(self, username, rest_id):  # TODO: make username non-required
+        """
+        List all messages stored in given `rest_id` for given `username`.
+
+        Args:
+            username (str): Name of the user.
+            rest_id (str): Unique identificator of given REST request.
+        """
         with transaction.manager:
             status_info_obj = self.status_db.get(rest_id, None)
             db_username = self.id_to_username.get(rest_id, None)
@@ -237,6 +272,14 @@ class StatusHandler(DatabaseHandler):
             )
 
     def remove_status_info(self, rest_id, username=None):
+        """
+        Stop tracking of given `rest_id`.
+
+        Args:
+            rest_id (str): Unique identificator of given REST request.
+            username (str, default None): Name of the user. If not set, the
+                username will not be checked.
+        """
         with transaction.manager:
             # check privileges of `username` to access `rest_id`
             if username:
@@ -271,6 +314,13 @@ class StatusHandler(DatabaseHandler):
                     del self.username_to_ids[username]
 
     def trigger_garbage_collection(self, interval=YEAR/2):
+        """
+        Do a garbage collection run and remove all :class:`StatusInfo` objects
+        which are stored more than `interval`.
+
+        Args:
+            interval (int/float): Inteval in seconds.
+        """
         with transaction.manager:
             garbage_rest_ids = [
                 status_info.rest_id
