@@ -159,6 +159,12 @@ class StatusHandler(DatabaseHandler):
             self.status_username_key
         )
 
+        # index for log
+        self.log_key = "status log"
+        self.log_db = self._get_key_or_create(
+            self.log_key
+        )
+
     def log(self, msg): #: TODO: implement
         pass
 
@@ -337,3 +343,6 @@ class StatusHandler(DatabaseHandler):
 
         for rest_id in garbage_rest_ids:
             self.remove_status_info(rest_id)
+
+        with transaction.manager:
+            self.zeo.pack()
