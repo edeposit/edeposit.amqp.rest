@@ -7,6 +7,7 @@
 import transaction
 
 from database_handler import DatabaseHandler
+from zeo_connector import transaction_manager
 
 
 # Functions & classes =========================================================
@@ -32,6 +33,7 @@ class UserHandler(DatabaseHandler):
         self.users_key = "users"
         self.users = self._get_key_or_create(self.users_key)
 
+    @transaction_manager
     def add_user(self, username, pw_hash):
         """
         Add new user / update user's details.
@@ -41,9 +43,9 @@ class UserHandler(DatabaseHandler):
             pw_hash (str): Hash of the user'r password. See :func:`create_hash`
                 for details.
         """
-        with transaction.manager:
-            self.users[username] = pw_hash
+        self.users[username] = pw_hash
 
+    @transaction_manager
     def remove_user(self, username):
         """
         Remove `username` from the database.
@@ -51,8 +53,7 @@ class UserHandler(DatabaseHandler):
         Args:
             username (str): Username of the new user.
         """
-        with transaction.manager:
-            del self.users[username]
+        del self.users[username]
 
     def is_valid_user_hashed(self, username, hashed_password):
         """
@@ -91,6 +92,7 @@ class UserHandler(DatabaseHandler):
             hashed_password=hashing_mechanism(password)
         )
 
+    @transaction_manager
     def is_registered(self, username):
         """
         Is the `username` registered in system?
@@ -101,5 +103,4 @@ class UserHandler(DatabaseHandler):
         Returns:
             bool: True if the user is registered.
         """
-        with transaction.manager:
-            return username in self.users
+        return username in self.users

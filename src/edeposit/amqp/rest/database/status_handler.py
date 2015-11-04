@@ -13,6 +13,7 @@ from persistent import Persistent
 from BTrees.OOBTree import OOSet
 
 from database_handler import DatabaseHandler
+from zeo_connector import transaction_manager
 
 
 # Variables ===================================================================
@@ -168,6 +169,7 @@ class StatusHandler(DatabaseHandler):
     def log(self, msg): #: TODO: implement
         pass
 
+    @transaction_manager
     def register_status_tracking(self, username, rest_id):
         """
         Register `username` for tracking states of given `rest_id`.
@@ -176,21 +178,21 @@ class StatusHandler(DatabaseHandler):
             username (str): Name of the user.
             rest_id (str): Unique identificator of given REST request.
         """
-        with transaction.manager:
-            # handle id->username mapping
-            self.id_to_username[rest_id] = username
+        # handle id->username mapping
+        self.id_to_username[rest_id] = username
 
-            # handle username->ids mapping
-            uname_to_ids = self.username_to_ids.get(username, None)
-            if uname_to_ids is None:
-                uname_to_ids = OOSet()
-                self.username_to_ids[username] = uname_to_ids
+        # handle username->ids mapping
+        uname_to_ids = self.username_to_ids.get(username, None)
+        if uname_to_ids is None:
+            uname_to_ids = OOSet()
+            self.username_to_ids[username] = uname_to_ids
 
-            # add new rest_id to set
-            uname_to_ids.add(rest_id)
+        # add new rest_id to set
+        uname_to_ids.add(rest_id)
 
-            self.status_db[rest_id] = StatusInfo(rest_id=rest_id)
+        self.status_db[rest_id] = StatusInfo(rest_id=rest_id)
 
+    @transaction_manager
     def save_status_update(self, rest_id, message, timestamp, pub_url=None):
         """
         Save new status `message` to given `rest_id`.
@@ -201,18 +203,18 @@ class StatusHandler(DatabaseHandler):
             timestamp (float): Python timestamp format.
             pub_url (str, default None): URL of the publication in edeposit.
         """
-        with transaction.manager:
-            status_info_obj = self.status_db.get(rest_id, None)
+        status_info_obj = self.status_db.get(rest_id, None)
 
-            # if the `rest_id` is not registered for tracking, just ignore it
-            if not status_info_obj:
-                return
+        # if the `rest_id` is not registered for tracking, just ignore it
+        if not status_info_obj:
+            return
 
-            if pub_url:
-                status_info_obj.pub_url = pub_url
+        if pub_url:
+            status_info_obj.pub_url = pub_url
 
-            status_info_obj.add_message(message, timestamp)
+        status_info_obj.add_message(message, timestamp)
 
+    @transaction_manager
     def query_status(self, username, rest_id):  # TODO: make username non-required
         """
         List all messages stored in given `rest_id` for given `username`.
@@ -221,26 +223,26 @@ class StatusHandler(DatabaseHandler):
             username (str): Name of the user.
             rest_id (str): Unique identificator of given REST request.
         """
-        with transaction.manager:
-            status_info_obj = self.status_db.get(rest_id, None)
-            db_username = self.id_to_username.get(rest_id, None)
+        status_info_obj = self.status_db.get(rest_id, None)
+        db_username = self.id_to_username.get(rest_id, None)
 
-            if not db_username:
-                raise IndexError(
-                    "User '%s' is not registered to receive status updates for"
-                    " '%s'!" % (username, rest_id)
-                )
+        if not db_username:
+            raise IndexError(
+                "User '%s' is not registered to receive status updates for"
+                " '%s'!" % (username, rest_id)
+            )
 
-            if username != db_username:
-                raise AccessDeniedException(
-                    "Item '%s' is not owned by '%s'!" % (rest_id, username)
-                )
+        if username != db_username:
+            raise AccessDeniedException(
+                "Item '%s' is not owned by '%s'!" % (rest_id, username)
+            )
 
-            if not status_info_obj:
-                return []
+        if not status_info_obj:
+            return []
 
-            return status_info_obj.get_messages()
+        return status_info_obj.get_messages()
 
+    @transaction_manager
     def query_statuses(self, username):
         """
         Get informations about all trackings for given `username`.
@@ -251,32 +253,32 @@ class StatusHandler(DatabaseHandler):
         Returns:
             OrderedDict: ``{rest_id: [messages]}``
         """
-        with transaction.manager:
-            ids = self.username_to_ids.get(username, None)
+        ids = self.username_to_ids.get(username, None)
 
-            if ids is None:
-                raise IndexError(
-                    "Username '%s' is not registered for tracking!" % username
-                )
-
-            # convert list of rest_ids to StatusInfo objects from DB
-            status_infos = (
-                self.status_db.get(rest_id, None)
-                for rest_id in ids
+        if ids is None:
+            raise IndexError(
+                "Username '%s' is not registered for tracking!" % username
             )
 
-            # filter None elements
-            status_infos = (
-                status_info
-                for status_info in status_infos
-                if status_info is not None
-            )
+        # convert list of rest_ids to StatusInfo objects from DB
+        status_infos = (
+            self.status_db.get(rest_id, None)
+            for rest_id in ids
+        )
 
-            return OrderedDict(
-                (si.rest_id, si.get_messages())
-                for si in sorted(status_infos, key=lambda x: x.registered_ts)
-            )
+        # filter None elements
+        status_infos = (
+            status_info
+            for status_info in status_infos
+            if status_info is not None
+        )
 
+        return OrderedDict(
+            (si.rest_id, si.get_messages())
+            for si in sorted(status_infos, key=lambda x: x.registered_ts)
+        )
+
+    @transaction_manager
     def remove_status_info(self, rest_id, username=None):
         """
         Stop tracking of given `rest_id`.
@@ -286,38 +288,37 @@ class StatusHandler(DatabaseHandler):
             username (str, default None): Name of the user. If not set, the
                 username will not be checked.
         """
-        with transaction.manager:
-            # check privileges of `username` to access `rest_id`
-            if username:
-                if rest_id not in self.username_to_ids.get(username, []):
-                    raise AccessDeniedException(
-                        "Can't delete '%s' - invalid owner '%s'." % (
-                            rest_id,
-                            username,
-                        )
+        # check privileges of `username` to access `rest_id`
+        if username:
+            if rest_id not in self.username_to_ids.get(username, []):
+                raise AccessDeniedException(
+                    "Can't delete '%s' - invalid owner '%s'." % (
+                        rest_id,
+                        username,
                     )
+                )
 
-            # remove StatusInfo object
-            if rest_id in self.status_db:
-                del self.status_db[rest_id]
+        # remove StatusInfo object
+        if rest_id in self.status_db:
+            del self.status_db[rest_id]
 
-            # remove from id->username mapping
-            stored_username = self.id_to_username.get(rest_id, None)
-            if stored_username:
-                del self.id_to_username[rest_id]
-                username = stored_username
+        # remove from id->username mapping
+        stored_username = self.id_to_username.get(rest_id, None)
+        if stored_username:
+            del self.id_to_username[rest_id]
+            username = stored_username
 
-            # remove from username->ids mapping
-            if username:
-                ids = self.username_to_ids.get(username, None)
+        # remove from username->ids mapping
+        if username:
+            ids = self.username_to_ids.get(username, None)
 
-                # remove `rest_id` from ids
-                if ids is not None and rest_id in ids:
-                    self.username_to_ids[username].remove(rest_id)
+            # remove `rest_id` from ids
+            if ids is not None and rest_id in ids:
+                self.username_to_ids[username].remove(rest_id)
 
-                # remove empty sets of ids
-                if not self.username_to_ids[username]:
-                    del self.username_to_ids[username]
+            # remove empty sets of ids
+            if not self.username_to_ids[username]:
+                del self.username_to_ids[username]
 
     def trigger_garbage_collection(self, interval=YEAR/2):
         """
