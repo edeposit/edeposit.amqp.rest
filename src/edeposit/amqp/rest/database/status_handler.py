@@ -5,6 +5,7 @@
 #
 # Imports =====================================================================
 import time
+import random
 from collections import OrderedDict
 from functools import total_ordering
 
@@ -170,8 +171,18 @@ class StatusHandler(DatabaseHandler):
             self.log_key
         )
 
-    def log(self, msg): #: TODO: implement
-        pass
+    def log(self, msg, session=None):
+        """
+        Log the message to the database.
+
+        Args:
+            msg (str): Content of the message.
+            session (str): Optional session number used as prefix for message.
+        """
+        if session:
+            msg = str(session) + ": " + msg
+
+        self.log_db[time.time()] = msg
 
     @transaction_manager
     def register_status_tracking(self, username, rest_id):
@@ -182,6 +193,8 @@ class StatusHandler(DatabaseHandler):
             username (str): Name of the user.
             rest_id (str): Unique identificator of given REST request.
         """
+        self.log("Registering user '%s' to track '%s'." % (username, rest_id))
+
         # handle id->username mapping
         self.id_to_username[rest_id] = username
 
@@ -298,9 +311,18 @@ class StatusHandler(DatabaseHandler):
             username (str, default None): Name of the user. If not set, the
                 username will not be checked.
         """
+        session = random.randint(0, 100000)
+        self.log("Request to remove StatusInfo(%s)." % repr(rest_id), session)
+
         # check privileges of `username` to access `rest_id`
         if username:
             if rest_id not in self.username_to_ids.get(username, []):
+                self.log(
+                    "Removing StatusInfo(%s): " % repr(rest_id) +
+                    "Invalid username '%s'." % username,
+                    session
+                )
+
                 raise AccessDeniedException(
                     "Can't delete '%s' - invalid owner '%s'." % (
                         rest_id,
@@ -330,6 +352,8 @@ class StatusHandler(DatabaseHandler):
             if not self.username_to_ids[username]:
                 del self.username_to_ids[username]
 
+        self.log("StatusInfo(%s) successfully removed." % rest_id, session)
+
     def trigger_garbage_collection(self, interval=YEAR/2):
         """
         Do a garbage collection run and remove all :class:`StatusInfo` objects
@@ -345,12 +369,12 @@ class StatusHandler(DatabaseHandler):
                 if status_info.registered_ts + interval <= time.time()
             ]
 
-        self.log(
-            "Garbage collection triggered. Cleaning %d objects: %s" % (
-                len(garbage_rest_ids),
-                ", ".join(garbage_rest_ids)
+            self.log(
+                "Garbage collection triggered. Cleaning %d objects: %s" % (
+                    len(garbage_rest_ids),
+                    ", ".join(garbage_rest_ids)
+                )
             )
-        )
 
         for rest_id in garbage_rest_ids:
             self.remove_status_info(rest_id)
