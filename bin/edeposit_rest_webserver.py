@@ -38,11 +38,22 @@ TEMPLATE_PATH = join(
     dirname(__file__), "../src/edeposit/amqp/rest/html_templates"
 )
 V1_PATH = "/api/v1/"
+USERS = UserHandler(
+    conf_path=settings.ZEO_CLIENT_CONF_FILE,
+    project_key=settings.PROJECT_KEY,
+)
 
 
 # Functions & classes =========================================================
 def check_auth(username, password):
-    return True
+    request.environ["username"] = username
+    request.environ["password"] = password
+
+    return True  # TODO: remove
+    return USERS.is_valid_user(
+        username=username,
+        password=password
+    )
 
 
 # API definition =========================================================
@@ -59,11 +70,13 @@ def track_publications():
     pass
 
 
+@get(join(V1_PATH, "submit"))  # TODO: remove
 @post(join(V1_PATH, "submit"))
-@form_to_params
 @auth_basic(check_auth)
+@form_to_params
 def submit_publication():
-    request.body.readlines()
+    # request.body.readlines()
+    return repr(request.environ)
 
 
 @route("/")
