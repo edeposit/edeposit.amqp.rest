@@ -7,13 +7,96 @@
 <body>
 
 <rst>
-
 REST API
-++++++++
+========
 
-Seznam *adres* jednotlivých bodů REST API:
+Vítejte v dokumentaci REST API projektu e-deposit. Toto API vám umožňuje ohlašovat publikace automatickým způsobem. Dále také umožňuje sledovat stav publikací tak, jak postupně procházejí různými odděleními knihovny.
 
-    - something..
+Přihlášení
+----------
+
+API vyžaduje přihlášení uživatelským jménem metodou <a href="https://cs.wikipedia.org/wiki/Basic_access_authentication">HTML Basic AUTH</a> přes SSL.
+
+Uživatelské jméno a heslo je rozdílné od jména určeného pro přihlášení do samotného e-edepositu a je nutné ho vygenerovat ve vašem účtu.
+
+Adresy API
+----------
+
+Všechny adresy začínají prefixem ``/api/v1/``, který byl pro zjednodušení vypušten. Je-li uvedeno, že se jedná o adresu ``/submit``, je ve skutečnosti myšlena plná cesta, tedy ``/api/v1/submit``.
+
+Seznam adres jednotlivých bodů REST API:
+
++---------------+----------------------+-------------+-----------------------------------------------------+
+| Typ požadavku |         URL          |  Parametry  |                        Popis                        |
++===============+======================+=============+=====================================================+
+| POST          | ``/submit``          | Viz detaily | Odeslat nový požadavek.                             |
++---------------+----------------------+-------------+-----------------------------------------------------+
+| GET           | ``/track``           | Ne          | Zjisit stav všech ohlášených požadavků.             |
++---------------+----------------------+-------------+-----------------------------------------------------+
+| GET           | ``/track/<rest_id>`` | Ne          | Zjistit stav požadavku s identifikátorem `rest_id`. |
++---------------+----------------------+-------------+-----------------------------------------------------+
+
+/submit
++++++++
+
+Ohlášení nové e-publikace a souvisejících metadat.
+
+Vyžadované parametry
+^^^^^^^^^^^^^^^^^^^^
+
++--------------------------+----------------+
+|     Jméno parametru      |     Popis      |
++==========================+================+
+| ``nazev``                | Název e-knihy. |
++--------------------------+----------------+
+| ``poradi_vydani``        |                |
++--------------------------+----------------+
+| ``misto_vydani``         |                |
++--------------------------+----------------+
+| ``rok_vydani``           |                |
++--------------------------+----------------+
+| ``nakladatel_vydavatel`` |                |
++--------------------------+----------------+
+| ``zpracovatel_zaznamu``  |                |
++--------------------------+----------------+
+
+Volitelné parametry
+^^^^^^^^^^^^^^^^^^^
+
++------------------------+-----------------+
+|    Jméno parametru     |      Popis      |
++========================+=================+
+| podnazev               | Podnázev knihy. |
++------------------------+-----------------+
+| cast                   |                 |
++------------------------+-----------------+
+| nazev_casti            |                 |
++------------------------+-----------------+
+| isbn                   |                 |
++------------------------+-----------------+
+| generated_isbn         |                 |
++------------------------+-----------------+
+| isbn_souboru_publikaci |                 |
++------------------------+-----------------+
+| author1                |                 |
++------------------------+-----------------+
+| author2                |                 |
++------------------------+-----------------+
+| author3                |                 |
++------------------------+-----------------+
+| vydano_v_koedici_s     |                 |
++------------------------+-----------------+
+| cena                   |                 |
++------------------------+-----------------+
+
+/track
+++++++
+
+
+/track/<rest_id>
+++++++++++++++++
+
+
 
 </rst>
 
