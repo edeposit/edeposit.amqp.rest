@@ -82,7 +82,18 @@ def submit_publication():
 @route("/")
 def description_page():
     with open(join(TEMPLATE_PATH, "index.html")) as f:
-        return f.read()
+        content = f.read()
+
+    import dhtmlparser
+    from docutils.core import publish_parts
+
+    dom = dhtmlparser.parseString(content)
+    for rst in dom.find("rst"):
+        rst_content = publish_parts(rst.getContent(), writer_name='html')
+        rst_content = rst_content['html_body'].encode("utf-8")
+        rst.replaceWith(dhtmlparser.HTMLElement(rst_content))
+
+    return dom.prettify()
 
 
 # Main program ================================================================
