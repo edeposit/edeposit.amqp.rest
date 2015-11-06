@@ -32,6 +32,7 @@ import os.path
 
 # Module configuration ========================================================
 ZEO_CLIENT_CONF_FILE = ""  #: Path to the ZEO configuration.
+ZEO_SERVER_CONF_FILE = ""  #: Path to the ZEO configuration.
 PROJECT_KEY = "edeposit_rest"  #: Don't change this!
 
 WEB_ADDR = "localhost"  #: Address where the webserver should listen.
@@ -113,7 +114,17 @@ def _read_from_paths():
 _read_from_paths()
 
 
-# # Checks ======================================================================
-assert ZEO_CLIENT_CONF_FILE, (
-    "You have to set ZEO_CLIENT_CONF_FILE (%s) values in your config!"
-) % (ZEO_CLIENT_CONF_FILE or "UNSET!")
+# Checks ======================================================================
+def _format_error(var_name, msg):
+    msg = msg if msg else "UNSET!"
+    return "You have to set %s (%s) in rest.json config!" % (var_name, msg)
+
+
+assert ZEO_CLIENT_CONF_FILE, _format_error(
+    "ZEO_CLIENT_CONF_FILE",
+    ZEO_CLIENT_CONF_FILE
+)
+assert ZEO_SERVER_CONF_FILE, _format_error(
+    "ZEO_SERVER_CONF_FILE",
+    ZEO_SERVER_CONF_FILE
+)
