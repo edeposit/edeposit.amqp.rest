@@ -124,7 +124,3 @@ assert ZEO_CLIENT_CONF_FILE, _format_error(
     "ZEO_CLIENT_CONF_FILE",
     ZEO_CLIENT_CONF_FILE
 )
-assert ZEO_SERVER_CONF_FILE, _format_error(
-    "ZEO_SERVER_CONF_FILE",
-    ZEO_SERVER_CONF_FILE
-)
