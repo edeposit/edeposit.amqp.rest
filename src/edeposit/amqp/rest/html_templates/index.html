@@ -15,7 +15,9 @@ Vítejte v dokumentaci REST API projektu e-deposit. Toto API vám umožňuje ohl
 Přihlášení
 ----------
 
-API vyžaduje přihlášení uživatelským jménem metodou <a href="https://cs.wikipedia.org/wiki/Basic_access_authentication">HTML Basic AUTH</a> přes SSL.
+API vyžaduje přihlášení uživatelským jménem metodou `HTML Basic AUTH`_ přes SSL.
+
+.. _HTML Basic AUTH: https://cs.wikipedia.org/wiki/Basic_access_authentication
 
 Uživatelské jméno a heslo je rozdílné od jména určeného pro přihlášení do samotného e-edepositu a je nutné ho vygenerovat ve vašem účtu.
 
@@ -26,68 +28,113 @@ Všechny adresy začínají prefixem ``/api/v1/``, který byl pro zjednodušení
 
 Seznam adres jednotlivých bodů REST API:
 
-+---------------+----------------------+-------------+-----------------------------------------------------+
-| Typ požadavku |         URL          |  Parametry  |                        Popis                        |
-+===============+======================+=============+=====================================================+
-| POST          | ``/submit``          | Viz detaily | Odeslat nový požadavek.                             |
-+---------------+----------------------+-------------+-----------------------------------------------------+
-| GET           | ``/track``           | Ne          | Zjisit stav všech ohlášených požadavků.             |
-+---------------+----------------------+-------------+-----------------------------------------------------+
-| GET           | ``/track/<rest_id>`` | Ne          | Zjistit stav požadavku s identifikátorem `rest_id`. |
-+---------------+----------------------+-------------+-----------------------------------------------------+
++---------------+----------------------+-------------+-----------------------------------------------------------------+
+| Typ požadavku |         URL          |  Parametry  |                              Popis                              |
++===============+======================+=============+=================================================================+
+| POST          | ``/submit``          | Viz detaily | Odeslat nový požadavek ohlášení knihy.                          |
++---------------+----------------------+-------------+-----------------------------------------------------------------+
+| GET           | ``/track``           | Ne          | Zjisit stav všech ohlášených požadavků.                         |
++---------------+----------------------+-------------+-----------------------------------------------------------------+
+| GET           | ``/track/<rest_id>`` | Ne          | Zjistit stav konkrétního požadavku s identifikátorem `rest_id`. |
++---------------+----------------------+-------------+-----------------------------------------------------------------+
 
 /submit
 +++++++
 
-Ohlášení nové e-publikace a souvisejících metadat.
+Ohlášení nové e-publikace a souvisejících metadat. Tento krok defacto simuluje uživatele, který by jinak ohlášení musel provést ručně přes webové rozhraní.
 
 Vyžadované parametry
 ^^^^^^^^^^^^^^^^^^^^
 
-+--------------------------+----------------+
-|     Jméno parametru      |     Popis      |
-+==========================+================+
-| ``nazev``                | Název e-knihy. |
-+--------------------------+----------------+
-| ``poradi_vydani``        |                |
-+--------------------------+----------------+
-| ``misto_vydani``         |                |
-+--------------------------+----------------+
-| ``rok_vydani``           |                |
-+--------------------------+----------------+
-| ``nakladatel_vydavatel`` |                |
-+--------------------------+----------------+
-| ``zpracovatel_zaznamu``  |                |
-+--------------------------+----------------+
++--------------------------+-----------------------------------------------------+
+|     Jméno parametru      |                        Popis                        |
++==========================+=====================================================+
+| ``nazev``                | Název e-knihy.                                      |
++--------------------------+-----------------------------------------------------+
+| ``poradi_vydani``        | Pořadí, ve kterém byla kniha vydána.                |
++--------------------------+-----------------------------------------------------+
+| ``misto_vydani``         | Místo vydání s přesností na město.                  |
++--------------------------+-----------------------------------------------------+
+| ``rok_vydani``           | Rok ve kterém byla kniha vydána.                    |
++--------------------------+-----------------------------------------------------+
+| ``nakladatel_vydavatel`` | Název nakladatele či vydavatele knihy.              |
++--------------------------+-----------------------------------------------------+
+| ``zpracovatel_zaznamu``  | Jméno osoby zodopovědné za odeslání tohoto záznamu. |
++--------------------------+-----------------------------------------------------+
 
 Volitelné parametry
 ^^^^^^^^^^^^^^^^^^^
 
-+------------------------+-----------------+
-|    Jméno parametru     |      Popis      |
-+========================+=================+
-| podnazev               | Podnázev knihy. |
-+------------------------+-----------------+
-| cast                   |                 |
-+------------------------+-----------------+
-| nazev_casti            |                 |
-+------------------------+-----------------+
-| isbn                   |                 |
-+------------------------+-----------------+
-| generated_isbn         |                 |
-+------------------------+-----------------+
-| isbn_souboru_publikaci |                 |
-+------------------------+-----------------+
-| author1                |                 |
-+------------------------+-----------------+
-| author2                |                 |
-+------------------------+-----------------+
-| author3                |                 |
-+------------------------+-----------------+
-| vydano_v_koedici_s     |                 |
-+------------------------+-----------------+
-| cena                   |                 |
-+------------------------+-----------------+
++----------------------------+--------------------------------------------------------------------------+
+|      Jméno parametru       |                                  Popis                                   |
++============================+==========================================================================+
+| ``podnazev``               | Podnázev knihy.                                                          |
++----------------------------+--------------------------------------------------------------------------+
+| ``cast``                   |                                                                          |
++----------------------------+--------------------------------------------------------------------------+
+| ``nazev_casti``            |                                                                          |
++----------------------------+--------------------------------------------------------------------------+
+| ``isbn``                   | ISBN které má být použité pro knihu. Pokud není uvedeno, bude přiděleno. |
++----------------------------+--------------------------------------------------------------------------+
+| ``isbn_souboru_publikaci`` | ISBN souboru publikací.                                                  |
++----------------------------+--------------------------------------------------------------------------+
+| ``author1``                | Autor knihy.                                                             |
++----------------------------+--------------------------------------------------------------------------+
+| ``author2``                | Další autor knihy.                                                       |
++----------------------------+--------------------------------------------------------------------------+
+| ``author3``                | Možnost uvést třetího autora knihy.                                      |
++----------------------------+--------------------------------------------------------------------------+
+| ``vydano_v_koedici_s``     | Vydáno v koedici s .. (jméno vydavatele).                                |
++----------------------------+--------------------------------------------------------------------------+
+| ``cena``                   | Cena knihy v korunách.                                                   |
++----------------------------+--------------------------------------------------------------------------+
+| ``zpristupnení``           | Zpřístupnění knihy dalším knihovnám. Hodnoty viz tabulka dále.           |
++----------------------------+--------------------------------------------------------------------------+
+
+Zpřístupnění
+````````````
+
+Je možné nastavit volitelné zpřístupnění e-publikace různým knihovnám. Ze smlouvy plyne, že kniha je vždy zpřístupněna minimálně Národní knihovně České republiky.
+
++-------------------------------------------------------+----------------------------------------------------+
+|                      Hodnota pole                     |                    Význam pole                     |
++=======================================================+====================================================+
+| ``moravska-zemska-knihovna-v-brne``                   | Moravská zemská knihovna v Brně.                   |
++-------------------------------------------------------+----------------------------------------------------+
+| ``vedecka-knihovna-v-olomouci``                       | Vědecká knihovna v Olomouci.                       |
++-------------------------------------------------------+----------------------------------------------------+
+| ``jihoceska-vedecka-knihovna-v-ceskych-budejovicich`` | Jihočeská vědecká knihovna v Českých Budějovicích. |
++-------------------------------------------------------+----------------------------------------------------+
+| ``studijni-a-vedecka-knihovna-v-hradci-kralove``      | Studijní a vědecká knihovna v Hradci Králové.      |
++-------------------------------------------------------+----------------------------------------------------+
+| ``krajska-knihovna-karlovy-vary``                     | Krajská knihovna Karlovy Vary.                     |
++-------------------------------------------------------+----------------------------------------------------+
+| ``stredoceska-vedecka-knihovna-v-kladne``             | Středočeská vědecká knihovna v Kladně.             |
++-------------------------------------------------------+----------------------------------------------------+
+| ``moravskoslezska-vedecka-knihovna-v-ostrave``        | Moravskoslezská vědecká knihovna v Ostravě.        |
++-------------------------------------------------------+----------------------------------------------------+
+| ``krajska-vedecka-knihovna-v-liberci``                | Krajská vědecká knihovna v Liberci.                |
++-------------------------------------------------------+----------------------------------------------------+
+| ``krajska-knihovna-v-pardubicich``                    | Krajská knihovna v Pardubicích.                    |
++-------------------------------------------------------+----------------------------------------------------+
+| ``studijni-a-vedecka-knihovna-plzenskeho-kraje``      | Studijní a vědecká knihovna Plzeňského kraje.      |
++-------------------------------------------------------+----------------------------------------------------+
+| ``mestska-knihovna-v-praze``                          | Městská knihovna v Praze.                          |
++-------------------------------------------------------+----------------------------------------------------+
+| ``severoceska-vedecka-knihovna-v-usti-nad-labem``     | Severočeská vědecká knihovna v Ústí nad Labem.     |
++-------------------------------------------------------+----------------------------------------------------+
+| ``krajska-knihovna-vysociny-havlickuv-brod``          | Krajská knihovna Vysočiny (Havlíčkův Brod).        |
++-------------------------------------------------------+----------------------------------------------------+
+| ``krajska-knihovna-frantiska-bartose-ve-zline``       | Krajská knihovna Františka Bartoše ve Zlíně.       |
++-------------------------------------------------------+----------------------------------------------------+
+
+Návratová hodnota
+^^^^^^^^^^^^^^^^^
+
+Návratovou hodnotou volání url ``/submit`` je `rest_id`, unikátní identifikátor právě ohlášeného požadavku ve formátu `UUID`_. Tento identifikátor lze dále použít pro sledování průběhu ohlašování.
+
+.. _UUID: https://en.wikipedia.org/wiki/Universally_unique_identifier
+
 
 /track
 ++++++
