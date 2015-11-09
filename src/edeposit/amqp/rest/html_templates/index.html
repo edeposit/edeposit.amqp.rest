@@ -43,7 +43,7 @@ Seznam adres jednotlivých bodů REST API:
 
 Ohlášení nové e-publikace a souvisejících metadat. Tento krok odstraňuje nutnost ruční práce uživatele, který by jinak ohlášení musel provést manuálně přes webové rozhraní.
 
-Vzhledem k nutnosti odeslat v jednom kroku jednak samotný soubor, ale i strukturovaná metadata bylo rozhodnuto pro odeslání dat jako JSON strukturu 
+Vzhledem k nutnosti odeslat v jednom kroku jednak samotný soubor, ale i strukturovaná metadata bylo rozhodnuto pro odeslání dat jako JSON strukturu v POST proměnné ``json_data``.
 
 Vyžadované parametry
 ^^^^^^^^^^^^^^^^^^^^
@@ -58,8 +58,6 @@ Vyžadované parametry
 | ``misto_vydani``         | Místo vydání s přesností na město.                  |
 +--------------------------+-----------------------------------------------------+
 | ``rok_vydani``           | Rok ve kterém byla kniha vydána.                    |
-+--------------------------+-----------------------------------------------------+
-| ``nakladatel_vydavatel`` | Název nakladatele či vydavatele knihy.              |
 +--------------------------+-----------------------------------------------------+
 | ``zpracovatel_zaznamu``  | Jméno osoby zodopovědné za odeslání tohoto záznamu. |
 +--------------------------+-----------------------------------------------------+
@@ -88,11 +86,17 @@ Volitelné parametry
 +----------------------------+--------------------------------------------------------------------------+
 | ``author3``                | Možnost uvést třetího autora knihy.                                      |
 +----------------------------+--------------------------------------------------------------------------+
+| ``nakladatel_vydavatel``   | Název nakladatele či vydavatele knihy.                                   |
++----------------------------+--------------------------------------------------------------------------+
 | ``vydano_v_koedici_s``     | Vydáno v koedici s .. (jméno vydavatele).                                |
 +----------------------------+--------------------------------------------------------------------------+
 | ``cena``                   | Cena knihy v korunách.                                                   |
 +----------------------------+--------------------------------------------------------------------------+
-| ``zpristupnení``           | Zpřístupnění knihy dalším knihovnám. Hodnoty viz tabulka dále.           |
+| ``url``                    | URL epublikace v katalogu vydavetele.                                    |
++----------------------------+--------------------------------------------------------------------------+
+| ``anotace``                | Popis knihy. Maximálně 500 znaků.                                        |
++----------------------------+--------------------------------------------------------------------------+
+| ``zpristupneni``           | Zpřístupnění knihy dalším knihovnám. Hodnoty viz tabulka dále.           |
 +----------------------------+--------------------------------------------------------------------------+
 | ``riv``                    | Kategorie RIVu.                                                          |
 +----------------------------+--------------------------------------------------------------------------+
