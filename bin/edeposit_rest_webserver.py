@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 
 import sys
 import os.path
+import argparse
 from os.path import join
 from os.path import dirname
 
@@ -38,10 +39,7 @@ TEMPLATE_PATH = join(
     dirname(__file__), "../src/edeposit/amqp/rest/html_templates"
 )
 V1_PATH = "/api/v1/"
-USERS = UserHandler(
-    conf_path=settings.ZEO_CLIENT_CONF_FILE,
-    project_key=settings.PROJECT_KEY,
-)
+USER_DB = None
 
 
 # Functions & classes =========================================================
@@ -50,7 +48,7 @@ def check_auth(username, password):
     request.environ["password"] = password
 
     return True  # TODO: remove
-    return USERS.is_valid_user(
+    return USER_DB.is_valid_user(
         username=username,
         password=password
     )
@@ -74,9 +72,10 @@ def track_publications():
 @post(join(V1_PATH, "submit"))
 @auth_basic(check_auth)
 @form_to_params
-def submit_publication():
+def submit_publication(json_data):
     # request.body.readlines()
-    return repr(request.environ)
+    # return repr(request.environ)
+    return json_data
 
 
 @route("/")
@@ -98,10 +97,66 @@ def description_page():
 
 # Main program ================================================================
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--server",
+        default=settings.WEB_SERVER,
+        help="Type of the server used for threading. Default '%s'." % (
+            settings.WEB_SERVER
+        )
+    )
+    parser.add_argument(
+        "--host",
+        default=settings.WEB_ADDR,
+        help="Address to which the bottle should listen. Default '%s'." % (
+            settings.WEB_ADDR
+        )
+    )
+    parser.add_argument(
+        "--port",
+        default=settings.WEB_PORT,
+        type=int,
+        help="Port on which the server should listen. Default %d." % (
+            settings.WEB_PORT
+        )
+    )
+    parser.add_argument(
+        "--zeo-client-conf-file",
+        default=settings.ZEO_CLIENT_CONF_FILE,
+        help="Path to the ZEO configuration file. Default %s." % (
+            settings.ZEO_CLIENT_CONF_FILE
+        )
+    )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Use debug mode. Default False."
+    )
+    parser.add_argument(
+        "--reloader",
+        action="store_true",
+        help="Use reloader."
+    )
+
+    args = parser.parse_args()
+
+    # don't forget to set connection to database
+    USER_DB = UserHandler(
+        conf_path=args.zeo_client_conf_file,
+        project_key=settings.PROJECT_KEY,
+    )
+
+    # run the server
     run(
-        server=settings.WEB_SERVER,
-        host=settings.WEB_ADDR,
-        port=settings.WEB_PORT,
-        debug=settings.WEB_DEBUG,
-        reloader=settings.WEB_RELOADER,
+        server=args.server,
+        host=args.host,
+        port=args.port,
+        debug=args.debug or settings.WEB_DEBUG,
+        reloader=args.reloader or settings.WEB_RELOADER,
+    )
+else:
+    # don't forget to set connection to database
+    USER_DB = UserHandler(
+        conf_path=settings.ZEO_CLIENT_CONF_FILE,
+        project_key=settings.PROJECT_KEY,
     )
