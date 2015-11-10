@@ -137,6 +137,12 @@ if __name__ == '__main__':
         action="store_true",
         help="Use reloader."
     )
+    parser.add_argument(
+        "--quiet",
+        default=False,
+        action="store_true",
+        help="Be quiet."
+    )
 
     args = parser.parse_args()
 
@@ -153,6 +159,7 @@ if __name__ == '__main__':
         port=args.port,
         debug=args.debug or settings.WEB_DEBUG,
         reloader=args.reloader or settings.WEB_RELOADER,
+        quiet=args.quiet
     )
 else:
     # don't forget to set connection to database
