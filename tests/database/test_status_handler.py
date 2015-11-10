@@ -32,7 +32,7 @@ def status_handler():
 
 
 # Tests =======================================================================
-def test_status_message():
+def test_status_message(zeo):
     s1 = StatusMessage(message="first", timestamp=time.time())
     s2 = StatusMessage(message="second", timestamp=time.time())
     s1_ = StatusMessage(message="first", timestamp=s1.timestamp)

@@ -24,7 +24,7 @@ def user_db():
 
 
 # Tests =======================================================================
-def test_user_handling():
+def test_user_handling(zeo):
     db1 = user_db()
 
     db1.add_user("foo", create_hash("bar"))

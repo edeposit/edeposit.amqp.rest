@@ -12,6 +12,6 @@ from zeo_connector_defaults import cleanup_environment
 
 # Setup =======================================================================
 @pytest.fixture(scope="session", autouse=True)
-def database(request):
+def zeo(request):
     generate_environment()
     request.addfinalizer(cleanup_environment)
