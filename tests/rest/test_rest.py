@@ -61,7 +61,7 @@ def bottle_server(request, zeo):
 
 
 # Tests =======================================================================
-def check_error(response):
+def check_errors(response):
     try:
         response.raise_for_status()
     except requests.HTTPError:
@@ -79,19 +79,21 @@ def check_error(response):
     return response.text
 
 
-def test_send(bottle_server):
-    data = {
-        "title": "Název",
-        "poradi_vydani": "3",
-        "misto_vydani": "Praha",
-        "rok_vydani": "1989",
-        "zpracovatel_zaznamu": "/me",
-    }
-
-    resp = requests.post(
+def send_request(data):
+    return requests.post(
         urlparse.urljoin(URL, "submit"),
         data={"json_data": json.dumps(data)},
         auth=HTTPBasicAuth('user', 'pass'),
     )
 
-    print check_error(resp)
+
+def test_submit_epub_minimal(bottle_server):
+    resp = send_request({
+        "title": "Název",
+        "poradi_vydani": "3",
+        "misto_vydani": "Praha",
+        "rok_vydani": "1989",
+        "zpracovatel_zaznamu": "/me",
+    })
+
+    assert check_errors(resp)
