@@ -7,6 +7,7 @@
 from __future__ import unicode_literals
 
 import sys
+import json
 import os.path
 import argparse
 from os.path import join
@@ -21,6 +22,14 @@ from bottle import auth_basic
 from bottle import SimpleTemplate
 
 from bottle_rest import form_to_params
+
+# TODO: do requirements
+import dhtmlparser
+from docutils.core import publish_parts
+
+# TODO: ..
+# from edeposit.amqp.models import EpublicationValidator
+from models import EpublicationValidator
 
 sys.path.insert(0, join(dirname(__file__), "../src/edeposit/amqp"))
 
@@ -54,7 +63,7 @@ def check_auth(username, password):
     )
 
 
-# API definition =========================================================
+# API definition ==============================================================
 @route(join(V1_PATH, "track/<uid>"))
 @auth_basic(check_auth)
 def track_publication(uid=None):
@@ -73,18 +82,15 @@ def track_publications():
 @auth_basic(check_auth)
 @form_to_params
 def submit_publication(json_data):
-    # request.body.readlines()
-    # return repr(request.environ)
-    return json_data
+    metadata = json.loads(json_data)
+
+    return EpublicationValidator.validate(metadata)
 
 
 @route("/")
 def description_page():
     with open(join(TEMPLATE_PATH, "index.html")) as f:
         content = f.read()
-
-    import dhtmlparser
-    from docutils.core import publish_parts
 
     dom = dhtmlparser.parseString(content)
     for rst in dom.find("rst"):
