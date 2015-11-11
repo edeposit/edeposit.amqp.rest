@@ -97,3 +97,28 @@ def test_submit_epub_minimal(bottle_server):
     })
 
     assert check_errors(resp)
+
+
+def test_submit_epub_minimal_numeric():
+    resp = send_request({
+        "title": "Název",
+        "poradi_vydani": "3",
+        "misto_vydani": "Praha",
+        "rok_vydani": 1989,  # numeric now!
+        "zpracovatel_zaznamu": "/me",
+    })
+
+    assert check_errors(resp)
+
+
+def test_submit_epub_minimal_year_fail():
+    resp = send_request({
+        "title": "Název",
+        "poradi_vydani": "3",
+        "misto_vydani": "Praha",
+        "rok_vydani": "azgabash",  # ordinary string should fail
+        "zpracovatel_zaznamu": "/me",
+    })
+
+    with pytest.raises(requests.HTTPError):
+        check_errors(resp)
