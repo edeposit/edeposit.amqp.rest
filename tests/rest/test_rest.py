@@ -14,6 +14,7 @@ import subprocess
 
 import pytest
 import requests
+import dhtmlparser
 from requests.auth import HTTPBasicAuth
 from zeo_connector_defaults import CLIENT_CONF_PATH
 
@@ -60,6 +61,24 @@ def bottle_server(request, zeo):
 
 
 # Tests =======================================================================
+def check_error(response):
+    try:
+        response.raise_for_status()
+    except requests.HTTPError:
+        dom = dhtmlparser.parseString(response.text.encode("utf-8"))
+        pre = dom.find("pre")
+
+        if not pre:
+            raise
+
+        error_msg = pre[1].getContent()
+        error_msg = error_msg.replace("&#039;", "'")
+        error_msg = error_msg.replace("&quote;", '"')
+        raise requests.HTTPError(error_msg)
+
+    return response.text
+
+
 def test_send(bottle_server):
     data = {
         "title": "Název",
@@ -74,4 +93,5 @@ def test_send(bottle_server):
         data={"json_data": json.dumps(data)},
         auth=HTTPBasicAuth('user', 'pass'),
     )
-    print resp.text
+
+    print check_error(resp)
