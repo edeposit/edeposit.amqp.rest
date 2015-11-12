@@ -21,8 +21,20 @@ from zeo_connector_defaults import CLIENT_CONF_PATH
 
 # Variables ===================================================================
 PORT = random.randint(20000, 60000)
-URL = "http://127.0.0.1:%d/api/v1/" % PORT
+URL = "http://127.0.0.1:%d" % PORT
+API_URL = URL + "/api/v1/"
 SERV = None
+
+
+# Functions ===================================================================
+def circuit_breaker_http_retry():
+    for i in range(10):
+        try:
+            return requests.get(URL).raise_for_status()
+        except Exception:
+            time.sleep(1)
+
+    raise IOError("Couldn't connect to thread with HTTP server. Aborting.")
 
 
 # Fixtures ====================================================================
@@ -52,7 +64,7 @@ def bottle_server(request, zeo):
     serv.setDaemon(True)
     serv.start()
 
-    time.sleep(1)  # TODO: replace with circuit breaked http ping
+    circuit_breaker_http_retry()
 
     def shutdown_server():
         SERV.terminate()
@@ -64,24 +76,24 @@ def bottle_server(request, zeo):
 def check_errors(response):
     try:
         response.raise_for_status()
-    except requests.HTTPError:
+    except requests.HTTPError as e:
         dom = dhtmlparser.parseString(response.text.encode("utf-8"))
         pre = dom.find("pre")
 
         if not pre:
-            raise
+            raise ValueError(e.message)
 
         error_msg = pre[1].getContent()
         error_msg = error_msg.replace("&#039;", "'")
         error_msg = error_msg.replace("&quote;", '"')
-        raise requests.HTTPError(error_msg)
+        raise ValueError(error_msg)
 
     return response.text
 
 
 def send_request(data):
     return requests.post(
-        urlparse.urljoin(URL, "submit"),
+        urlparse.urljoin(API_URL, "submit"),
         data={"json_data": json.dumps(data)},
         auth=HTTPBasicAuth('user', 'pass'),
     )
@@ -120,7 +132,7 @@ def test_submit_epub_minimal_year_fail():
         "zpracovatel_zaznamu": "/me",
     })
 
-    with pytest.raises(requests.HTTPError):
+    with pytest.raises(ValueError):
         check_errors(resp)
 
 
@@ -151,7 +163,7 @@ def test_submit_epub_optionals_price_error():
         "cena": "123 kč",
     })
 
-    with pytest.raises(requests.HTTPError):
+    with pytest.raises(ValueError):
         check_errors(resp)
 
 
@@ -165,7 +177,7 @@ def test_submit_epub_optionals_isbn_error():
         "isbn": "80-7169-860-2",  # wrong checksum
     })
 
-    with pytest.raises(requests.HTTPError):
+    with pytest.raises(ValueError):
         check_errors(resp)
 
     resp = send_request({
@@ -177,7 +189,7 @@ def test_submit_epub_optionals_isbn_error():
         "isbn": "",
     })
 
-    with pytest.raises(requests.HTTPError):
+    with pytest.raises(ValueError):
         check_errors(resp)
 
 
@@ -191,7 +203,7 @@ def test_submit_epub_optionals_isbn_souboru_publikaci_error():
         "isbn_souboru_publikaci": "80-7169-860-2",  # wrong checksum
     })
 
-    with pytest.raises(requests.HTTPError):
+    with pytest.raises(ValueError):
         check_errors(resp)
 
 
@@ -205,7 +217,7 @@ def test_submit_epub_optionals_libraries_error():
         "libraries_that_can_access": ["nejaka vymyslena"],
     })
 
-    with pytest.raises(requests.HTTPError):
+    with pytest.raises(ValueError):
         check_errors(resp)
 
 
@@ -219,5 +231,5 @@ def test_submit_epub_optionals_riv_error():
         "category_for_riv": 155,
     })
 
-    with pytest.raises(requests.HTTPError):
+    with pytest.raises(ValueError):
         check_errors(resp)
