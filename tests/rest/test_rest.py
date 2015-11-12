@@ -122,3 +122,20 @@ def test_submit_epub_minimal_year_fail():
 
     with pytest.raises(requests.HTTPError):
         check_errors(resp)
+
+
+def test_submit_epub_optionals():
+    resp = send_request({
+        "title": "Název",
+        "poradi_vydani": "3",
+        "misto_vydani": "Praha",
+        "rok_vydani": 1989,
+        "zpracovatel_zaznamu": "/me",
+        "cena": "123",
+        "isbn": "80-7169-860-1",
+        "isbn_souboru_publikaci": "80-7169-860-1",
+        "libraries_that_can_access": ["moravska-zemska-knihovna-v-brne"],
+        "category_for_riv": "10",
+    })
+
+    assert check_errors(resp)
