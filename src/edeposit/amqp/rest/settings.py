@@ -128,3 +128,8 @@ def _assert_pattern(var_name):
 
 _assert_pattern("WEB_CACHE")
 _assert_pattern("ZEO_CLIENT_CONF_FILE")
+_assert_pattern("ZEO_SERVER_CONF_FILE")
+
+assert os.access(WEB_CACHE, os.W_OK)
+assert os.access(ZEO_CLIENT_CONF_FILE)
+assert os.access(ZEO_SERVER_CONF_FILE)
