@@ -33,6 +33,8 @@ from docutils.core import publish_parts
 from models import SchemaError
 from models import EpublicationValidator
 from models import czech_to_edeposit_dict
+from models.riv import RIV_CATEGORIES
+from models.libraries import LIBRARY_MAP
 
 sys.path.insert(0, join(dirname(__file__), "../src/edeposit/amqp"))
 
@@ -107,6 +109,16 @@ def submit_publication(json_data):
     # TODO: napojit na DB
 
     return edep_metadata
+
+
+@get(join(V1_PATH, "structures", "riv"))
+def riv_structure():
+    return dict(RIV_CATEGORIES)
+
+
+@get(join(V1_PATH, "structures", "library_map"))
+def library_structure():
+    return LIBRARY_MAP
 
 
 @route("/")
