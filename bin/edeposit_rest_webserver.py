@@ -23,6 +23,7 @@ from bottle import auth_basic
 from bottle import SimpleTemplate
 
 from bottle_rest import form_to_params
+from BalancedDiscStorage import BalancedDiscStorage
 
 # TODO: do requirements
 import dhtmlparser
@@ -35,6 +36,7 @@ from models import EpublicationValidator
 from models import czech_to_edeposit_dict
 from models.riv import RIV_CATEGORIES
 from models.libraries import LIBRARY_MAP
+from models.libraries import DEFAULT_LIBRARY
 
 sys.path.insert(0, join(dirname(__file__), "../src/edeposit/amqp"))
 
@@ -68,6 +70,31 @@ def check_auth(username, password):
     )
 
 
+def process_metadata(json_metadata):
+    metadata = json.loads(json_metadata)
+
+    # make sure, that `nazev_souboru` is present in input metadata
+    filename = metadata.get("nazev_souboru", None)
+    if not filename:
+        abort(text="Parametr `nazev_souboru` je povinný!")
+    del metadata["nazev_souboru"]
+
+    # validate structure of metadata and map errors to abort() messages
+    try:
+        metadata = EpublicationValidator.validate(metadata)
+    except SchemaError as e:
+        msg = e.message.replace("Missing keys:", "Chybějící klíče:")
+        abort(text=msg)
+
+    # add DEFAULT_LIBRARY to metadata - it is always present
+    libraries = metadata.get("libraries_that_can_access", [])
+    libraries.append(DEFAULT_LIBRARY)
+    metadata["libraries_that_can_access"] = libraries
+
+    # convert input metadata to data for edeposit
+    return czech_to_edeposit_dict(metadata)
+
+
 # API definition ==============================================================
 @route(join(V1_PATH, "track/<uid>"))
 @auth_basic(check_auth)
@@ -86,29 +113,26 @@ def track_publications():
 @post(join(V1_PATH, "submit"))
 @auth_basic(check_auth)
 @form_to_params
-def submit_publication(json_data):
-    metadata = json.loads(json_data)
+def submit_publication(json_metadata):
+    metadata = process_metadata(json_metadata)
 
-    # make sure, that `nazev_souboru` is present in input metadata
-    filename = metadata.get("nazev_souboru", None)
-    if not filename:
-        abort(text="Parametr `nazev_souboru` je povinný!")
-    del metadata["nazev_souboru"]
+    # make sure that user is sending the file with the metadata
+    if not request.files:
+        abort(text="Tělo requestu musí obsahovat ohlašovaný soubor!")
 
-    # validate structure of metadata and map errors to abort() messages
-    try:
-        metadata = EpublicationValidator.validate(metadata)
-    except SchemaError as e:
-        msg = e.message.replace("Missing keys:", "Chybějící klíče:")
-        abort(text=msg)
+    # get handler to upload object
+    file_key = request.files.keys()[0]
+    upload_obj = request.files[file_key].file
 
-    # convert input metadata to data for edeposit
-    edep_metadata = czech_to_edeposit_dict(metadata)
+    # save the file to the BalancedDiscStorage
+    bds = BalancedDiscStorage(settings.WEB_CACHE)
+    bds_id = bds.add_file(upload_obj)
 
-    # TODO: stahovani souboru na disk metodou postupneho cteni
     # TODO: napojit na DB
+    metadata
+    bds_id
 
-    return edep_metadata
+    return metadata
 
 
 @get(join(V1_PATH, "structures", "riv"))
