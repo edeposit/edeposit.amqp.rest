@@ -83,9 +83,12 @@ def check_errors(response):
         if not pre:
             raise ValueError(e.message)
 
-        error_msg = pre[1].getContent()
+        pre_el = pre[0] if len(pre) == 1 else pre[1]
+
+        error_msg = pre_el.getContent()
         error_msg = error_msg.replace("&#039;", "'")
         error_msg = error_msg.replace("&quote;", '"')
+        error_msg = error_msg.replace("&quot;", '"')
         raise ValueError(error_msg)
 
     return response.text
@@ -101,11 +104,12 @@ def send_request(data):
 
 def test_submit_epub_minimal(bottle_server):
     resp = send_request({
-        "title": "Název",
+        "nazev": "Název",
         "poradi_vydani": "3",
         "misto_vydani": "Praha",
         "rok_vydani": "1989",
         "zpracovatel_zaznamu": "/me",
+        "nazev_souboru": "story_of_mighty_azgabash.pdf",
     })
 
     assert check_errors(resp)
@@ -113,11 +117,12 @@ def test_submit_epub_minimal(bottle_server):
 
 def test_submit_epub_minimal_numeric():
     resp = send_request({
-        "title": "Název",
+        "nazev": "Název",
         "poradi_vydani": "3",
         "misto_vydani": "Praha",
         "rok_vydani": 1989,  # numeric now!
         "zpracovatel_zaznamu": "/me",
+        "nazev_souboru": "story_of_mighty_azgabash.pdf",
     })
 
     assert check_errors(resp)
@@ -125,11 +130,12 @@ def test_submit_epub_minimal_numeric():
 
 def test_submit_epub_minimal_year_fail():
     resp = send_request({
-        "title": "Název",
+        "nazev": "Název",
         "poradi_vydani": "3",
         "misto_vydani": "Praha",
         "rok_vydani": "azgabash",  # ordinary string should fail
         "zpracovatel_zaznamu": "/me",
+        "nazev_souboru": "story_of_mighty_azgabash.pdf",
     })
 
     with pytest.raises(ValueError):
@@ -138,16 +144,17 @@ def test_submit_epub_minimal_year_fail():
 
 def test_submit_epub_optionals():
     resp = send_request({
-        "title": "Název",
+        "nazev": "Název",
         "poradi_vydani": "3",
         "misto_vydani": "Praha",
         "rok_vydani": 1989,
         "zpracovatel_zaznamu": "/me",
+        "nazev_souboru": "story_of_mighty_azgabash.pdf",
         "cena": "123",
         "isbn": "80-7169-860-1",
         "isbn_souboru_publikaci": "80-7169-860-1",
-        "libraries_that_can_access": ["moravska-zemska-knihovna-v-brne"],
-        "category_for_riv": 10,
+        "zpristupneni": ["moravska-zemska-knihovna-v-brne"],
+        "riv": 10,
     })
 
     assert check_errors(resp)
@@ -155,11 +162,12 @@ def test_submit_epub_optionals():
 
 def test_submit_epub_optionals_price_error():
     resp = send_request({
-        "title": "Název",
+        "nazev": "Název",
         "poradi_vydani": "3",
         "misto_vydani": "Praha",
         "rok_vydani": 1989,
         "zpracovatel_zaznamu": "/me",
+        "nazev_souboru": "story_of_mighty_azgabash.pdf",
         "cena": "123 kč",
     })
 
@@ -169,11 +177,12 @@ def test_submit_epub_optionals_price_error():
 
 def test_submit_epub_optionals_isbn_error():
     resp = send_request({
-        "title": "Název",
+        "nazev": "Název",
         "poradi_vydani": "3",
         "misto_vydani": "Praha",
         "rok_vydani": 1989,
         "zpracovatel_zaznamu": "/me",
+        "nazev_souboru": "story_of_mighty_azgabash.pdf",
         "isbn": "80-7169-860-2",  # wrong checksum
     })
 
@@ -181,11 +190,12 @@ def test_submit_epub_optionals_isbn_error():
         check_errors(resp)
 
     resp = send_request({
-        "title": "Název",
+        "nazev": "Název",
         "poradi_vydani": "3",
         "misto_vydani": "Praha",
         "rok_vydani": 1989,
         "zpracovatel_zaznamu": "/me",
+        "nazev_souboru": "story_of_mighty_azgabash.pdf",
         "isbn": "",
     })
 
@@ -195,11 +205,12 @@ def test_submit_epub_optionals_isbn_error():
 
 def test_submit_epub_optionals_isbn_souboru_publikaci_error():
     resp = send_request({
-        "title": "Název",
+        "nazev": "Název",
         "poradi_vydani": "3",
         "misto_vydani": "Praha",
         "rok_vydani": 1989,
         "zpracovatel_zaznamu": "/me",
+        "nazev_souboru": "story_of_mighty_azgabash.pdf",
         "isbn_souboru_publikaci": "80-7169-860-2",  # wrong checksum
     })
 
@@ -209,12 +220,13 @@ def test_submit_epub_optionals_isbn_souboru_publikaci_error():
 
 def test_submit_epub_optionals_libraries_error():
     resp = send_request({
-        "title": "Název",
+        "nazev": "Název",
         "poradi_vydani": "3",
         "misto_vydani": "Praha",
         "rok_vydani": 1989,
         "zpracovatel_zaznamu": "/me",
-        "libraries_that_can_access": ["nejaka vymyslena"],
+        "nazev_souboru": "story_of_mighty_azgabash.pdf",
+        "zpristupneni": ["nejaka vymyslena"],
     })
 
     with pytest.raises(ValueError):
@@ -223,12 +235,13 @@ def test_submit_epub_optionals_libraries_error():
 
 def test_submit_epub_optionals_riv_error():
     resp = send_request({
-        "title": "Název",
+        "nazev": "Název",
         "poradi_vydani": "3",
         "misto_vydani": "Praha",
         "rok_vydani": 1989,
         "zpracovatel_zaznamu": "/me",
-        "category_for_riv": 155,
+        "nazev_souboru": "story_of_mighty_azgabash.pdf",
+        "riv": 155,
     })
 
     with pytest.raises(ValueError):
