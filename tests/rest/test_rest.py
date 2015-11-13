@@ -99,6 +99,7 @@ def send_request(data):
         urlparse.urljoin(API_URL, "submit"),
         data={"json_metadata": json.dumps(data)},
         auth=HTTPBasicAuth('user', 'pass'),
+        files={'file': "Whatever"},
     )
 
 
