@@ -122,14 +122,18 @@ def _format_error(var_name, msg):
     return "You have to set %s (%s) in rest.json config!" % (var_name, msg)
 
 
-def _assert_pattern(var_name):
+def _assert_var_is_set(var_name):
     assert globals()[var_name], _format_error(var_name, globals()[var_name])
 
 
-_assert_pattern("WEB_CACHE")
-_assert_pattern("ZEO_CLIENT_CONF_FILE")
-_assert_pattern("ZEO_SERVER_CONF_FILE")
+def _assert_exists_and_perm(path, perm):
+    assert os.path.exists(path) and os.access(path, perm)
 
-assert os.access(WEB_CACHE, os.W_OK)
-assert os.access(ZEO_CLIENT_CONF_FILE)
-assert os.access(ZEO_SERVER_CONF_FILE)
+
+_assert_var_is_set("WEB_CACHE")
+_assert_var_is_set("ZEO_CLIENT_CONF_FILE")
+_assert_var_is_set("ZEO_SERVER_CONF_FILE")
+
+_assert_exists_and_perm(WEB_CACHE, os.W_OK)
+_assert_exists_and_perm(ZEO_CLIENT_CONF_FILE, os.R_OK)
+_assert_exists_and_perm(ZEO_SERVER_CONF_FILE, os.R_OK)
