@@ -17,6 +17,7 @@ from bottle import run
 from bottle import get
 from bottle import post
 from bottle import route
+from bottle import abort
 from bottle import request
 from bottle import auth_basic
 from bottle import SimpleTemplate
@@ -29,7 +30,9 @@ from docutils.core import publish_parts
 
 # TODO: ..
 # from edeposit.amqp.models import EpublicationValidator
+from models import SchemaError
 from models import EpublicationValidator
+from models import czech_to_edeposit_dict
 
 sys.path.insert(0, join(dirname(__file__), "../src/edeposit/amqp"))
 
@@ -84,7 +87,20 @@ def track_publications():
 def submit_publication(json_data):
     metadata = json.loads(json_data)
 
-    return EpublicationValidator.validate(metadata)
+    filename = metadata.get("nazev_souboru", None)
+    if not filename:
+        abort(text="Parametr `nazev_souboru` je povinný!")
+    del metadata["nazev_souboru"]
+
+    try:
+        metadata = EpublicationValidator.validate(metadata)
+    except SchemaError as e:
+        msg = e.message.replace("Missing keys:", "Chybějící klíče:")
+        abort(text=msg)
+
+    edep_metadata = czech_to_edeposit_dict(metadata)
+
+    return edep_metadata
 
 
 @route("/")
