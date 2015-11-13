@@ -22,7 +22,7 @@ if __name__ == '__main__':
 
     resp = requests.post(
         "http://localhost:8080/api/v1/submit",
-        data={"json_data": json.dumps(metadata)},
+        data={"json_metadata": json.dumps(metadata)},
         auth=requests.auth.HTTPBasicAuth('user', 'pass'),
         files={'file': open(__file__, 'rb')}
     )
