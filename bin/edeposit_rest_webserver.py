@@ -87,18 +87,24 @@ def track_publications():
 def submit_publication(json_data):
     metadata = json.loads(json_data)
 
+    # make sure, that `nazev_souboru` is present in input metadata
     filename = metadata.get("nazev_souboru", None)
     if not filename:
         abort(text="Parametr `nazev_souboru` je povinný!")
     del metadata["nazev_souboru"]
 
+    # validate structure of metadata and map errors to abort() messages
     try:
         metadata = EpublicationValidator.validate(metadata)
     except SchemaError as e:
         msg = e.message.replace("Missing keys:", "Chybějící klíče:")
         abort(text=msg)
 
+    # convert input metadata to data for edeposit
     edep_metadata = czech_to_edeposit_dict(metadata)
+
+    # TODO: stahovani souboru na disk metodou postupneho cteni
+    # TODO: napojit na DB
 
     return edep_metadata
 
