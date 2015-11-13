@@ -42,6 +42,8 @@ WEB_DB_TIMEOUT = 30  #: How often should web refresh connection to DB.
 WEB_DEBUG = False
 WEB_RELOADER = False
 
+WEB_CACHE = ""  #: Cache for the WEB upload.
+
 
 # User configuration reader (don't edit this) =================================
 _ALLOWED = [str, unicode, int, float, long, bool]  #: Allowed types.
@@ -116,11 +118,13 @@ _read_from_paths()
 
 # Checks ======================================================================
 def _format_error(var_name, msg):
-    msg = msg if msg else "UNSET!"
+    msg = repr(msg) if msg else "UNSET!"
     return "You have to set %s (%s) in rest.json config!" % (var_name, msg)
 
 
-assert ZEO_CLIENT_CONF_FILE, _format_error(
-    "ZEO_CLIENT_CONF_FILE",
-    ZEO_CLIENT_CONF_FILE
-)
+def _assert_pattern(var_name):
+    assert globals()[var_name], _format_error(var_name, globals()[var_name])
+
+
+_assert_pattern("WEB_CACHE")
+_assert_pattern("ZEO_CLIENT_CONF_FILE")
