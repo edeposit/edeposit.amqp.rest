@@ -3,3 +3,4 @@ bottle
 bottle-rest
 zeo_connector>=0.4.2
 edeposit.amqp.models
+BalancedDiscStorage>=1.0.3
