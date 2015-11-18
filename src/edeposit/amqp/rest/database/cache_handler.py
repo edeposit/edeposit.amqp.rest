@@ -4,10 +4,44 @@
 # Interpreter version: python 2.7
 #
 # Imports =====================================================================
+import time
+from functools import total_ordering
+
 import transaction
+from persistent import Persistent
 
 from zeo_connector import transaction_manager
 from zeo_connector.examples import DatabaseHandler
+
+from BalancedDiscStorage import BalancedDiscStorage
+
+from .. import settings
+
+
+# Functions & classes =========================================================
+@total_ordering
+class UploadRequest(Persistent):
+    def __init__(self, metadata, bds_id):
+        self.metadata = metadata
+        self.bds_id = bds_id
+        self.created = time.time()
+
+    def get_file_obj(self):
+        bds = BalancedDiscStorage(settings.WEB_CACHE)
+
+        with transaction.manager:
+            return open(bds.file_path_from_hash(self.bds_id), "rb")
+
+    def remove_file(self):
+        bds = BalancedDiscStorage(settings.WEB_CACHE)
+
+        bds.delete_by_hash(self.bds_id)
+
+    def __eq__(self, obj):
+        return self.bds_id == obj.bds_id
+
+    def __lt__(self, obj):
+        return float(self.created).__lt__(obj.created)
 
 
 class CacheHandler(DatabaseHandler):
@@ -21,10 +55,31 @@ class CacheHandler(DatabaseHandler):
 
         # read the proper index
         self.cache_key = "cache"
-        self.users = self._get_key_or_create(self.cache_key)
+        self.cache = self._get_key_or_create(self.cache_key)
 
-    def add_upload_request(metadata, bds_id):
-        pass
+    @transaction_manager
+    def add_upload_request(self, metadata, bds_id):
+        self.cache[bds_id] = UploadRequest(metadata, bds_id)
 
-    def get_upload_request():
-        pass
+    @transaction_manager
+    def has_upload_request(self):
+        return len(self.cache.keys()) > 0
+
+    @transaction_manager
+    def get_upload_request(self):
+        if not self.cache.keys():
+            raise ValueError("There is no cached upload request.")
+
+        oldest = min(self.cache.values(), key=lambda x: x.created)
+
+        return oldest
+
+    def pop_upload_requst(self):
+        if not self.cache.keys():
+            return None
+
+        oldest = min(self.cache.values(), key=lambda x: x.created)
+
+        del self.cache[oldest.bds_id]
+
+        return oldest
