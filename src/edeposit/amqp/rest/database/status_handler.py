@@ -13,8 +13,8 @@ import transaction
 from persistent import Persistent
 from BTrees.OOBTree import OOSet
 
-from database_handler import DatabaseHandler
 from zeo_connector import transaction_manager
+from zeo_connector.examples import DatabaseHandler
 
 
 # Variables ===================================================================

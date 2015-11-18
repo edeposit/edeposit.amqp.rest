@@ -6,8 +6,8 @@
 # Imports =====================================================================
 import transaction
 
-from database_handler import DatabaseHandler
 from zeo_connector import transaction_manager
+from zeo_connector.examples import DatabaseHandler
 
 
 class CacheHandler(DatabaseHandler):
@@ -22,3 +22,9 @@ class CacheHandler(DatabaseHandler):
         # read the proper index
         self.cache_key = "cache"
         self.users = self._get_key_or_create(self.cache_key)
+
+    def add_upload_request(metadata, bds_id):
+        pass
+
+    def get_upload_request():
+        pass

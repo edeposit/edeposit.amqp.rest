@@ -6,4 +6,3 @@
 # Imports =====================================================================
 from user_handler import UserHandler
 from status_handler import StatusHandler
-from database_handler import DatabaseHandler

@@ -128,8 +128,8 @@ def submit_publication(json_metadata):
     bds_id = bds.add_file(upload_obj)
 
     # TODO: napojit na DB
-    metadata
-    bds_id
+    # metadata
+    # bds_id
 
     return metadata
 

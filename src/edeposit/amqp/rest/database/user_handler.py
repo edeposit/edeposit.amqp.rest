@@ -6,8 +6,8 @@
 # Imports =====================================================================
 import transaction
 
-from database_handler import DatabaseHandler
 from zeo_connector import transaction_manager
+from zeo_connector.examples import DatabaseHandler
 
 
 # Functions & classes =========================================================
