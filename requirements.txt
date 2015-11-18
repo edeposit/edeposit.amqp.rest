@@ -1,6 +1,6 @@
 paste
 bottle
 bottle-rest
-zeo_connector>=0.4.2
+zeo-connector>=0.4.3
 edeposit.amqp.models
 BalancedDiscStorage>=1.0.3
