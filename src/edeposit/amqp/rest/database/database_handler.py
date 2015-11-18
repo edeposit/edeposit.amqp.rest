@@ -28,7 +28,10 @@ class DatabaseHandler(object):
         self._reload_zeo()
 
     def _reload_zeo(self):
-        self.zeo = ZEOConfWrapper(self.conf_path, self.project_key)
+        self.zeo = ZEOConfWrapper(
+            conf_path=self.conf_path,
+            project_key=self.project_key
+        )
 
     def _get_key_or_create(self, key, obj_type=OOBTree):
         with transaction.manager:
