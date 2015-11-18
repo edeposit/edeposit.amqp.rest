@@ -1,6 +1,8 @@
 paste
 bottle
+docutils
 bottle-rest
 zeo-connector>=0.4.3
 edeposit.amqp.models
 BalancedDiscStorage>=1.0.3
+pydhtmlparser>=2.1.5

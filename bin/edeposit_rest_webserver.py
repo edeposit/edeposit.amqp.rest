@@ -25,7 +25,6 @@ from bottle import SimpleTemplate
 from bottle_rest import form_to_params
 from BalancedDiscStorage import BalancedDiscStorage
 
-# TODO: do requirements
 import dhtmlparser
 from docutils.core import publish_parts
 
@@ -96,14 +95,14 @@ def process_metadata(json_metadata):
 
 
 # API definition ==============================================================
-@route(join(V1_PATH, "track/<uid>"))
+@route(join(V1_PATH, "track/<uid>"))  # TODO: change from route() to get()
 @auth_basic(check_auth)
 def track_publication(uid=None):
     if not uid:
         return track_publications()
 
 
-@route(join(V1_PATH, "track"))
+@route(join(V1_PATH, "track"))  # TODO: change from route() to get()
 @auth_basic(check_auth)
 def track_publications():
     pass
