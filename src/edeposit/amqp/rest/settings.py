@@ -39,8 +39,8 @@ WEB_ADDR = "localhost"  #: Address where the webserver should listen.
 WEB_PORT = 8080  #: Port for the webserver.
 WEB_SERVER = 'paste'  #: Use `paste` for threading.
 WEB_DB_TIMEOUT = 30  #: How often should web refresh connection to DB.
-WEB_DEBUG = False
-WEB_RELOADER = False
+WEB_DEBUG = False  #: Turn on web debug messages?
+WEB_RELOADER = False  #: Turn on reloader for webserver?
 
 WEB_CACHE = ""  #: Cache for the WEB upload.
 
@@ -91,7 +91,30 @@ def _substitute_globals(config_dict):
             globals()[key] = val
 
 
-def _read_from_paths():
+def _assert_constraints():
+    def _format_error(var_name, msg):
+        msg = repr(msg) if msg else "UNSET!"
+        return "You have to set %s (%s) in rest.json config!" % (var_name, msg)
+
+    def _assert_var_is_set(var_name):
+        assert globals()[var_name], _format_error(
+            var_name,
+            globals()[var_name]
+        )
+
+    def _assert_exists_and_perm(path, perm):
+        assert os.path.exists(path) and os.access(path, perm)
+
+    _assert_var_is_set("WEB_CACHE")
+    _assert_var_is_set("ZEO_CLIENT_CONF_FILE")
+    _assert_var_is_set("ZEO_SERVER_CONF_FILE")
+
+    _assert_exists_and_perm(WEB_CACHE, os.W_OK)
+    _assert_exists_and_perm(ZEO_CLIENT_CONF_FILE, os.R_OK)
+    _assert_exists_and_perm(ZEO_SERVER_CONF_FILE, os.R_OK)
+
+
+def _read_from_paths(mocked_path=None):
     """
     Try to read data from configuration paths ($HOME/_SETTINGS_PATH,
     /etc/_SETTINGS_PATH).
@@ -106,34 +129,16 @@ def _read_from_paths():
     elif os.path.exists(etc_path):
         read_path = etc_path
 
+    if mocked_path:
+        read_path = mocked_path
+
     if read_path:
         with open(read_path) as f:
             _substitute_globals(
                 json.loads(f.read())
             )
 
+    _assert_constraints()
+
 
 _read_from_paths()
-
-
-# Checks ======================================================================
-def _format_error(var_name, msg):
-    msg = repr(msg) if msg else "UNSET!"
-    return "You have to set %s (%s) in rest.json config!" % (var_name, msg)
-
-
-def _assert_var_is_set(var_name):
-    assert globals()[var_name], _format_error(var_name, globals()[var_name])
-
-
-def _assert_exists_and_perm(path, perm):
-    assert os.path.exists(path) and os.access(path, perm)
-
-
-_assert_var_is_set("WEB_CACHE")
-_assert_var_is_set("ZEO_CLIENT_CONF_FILE")
-_assert_var_is_set("ZEO_SERVER_CONF_FILE")
-
-_assert_exists_and_perm(WEB_CACHE, os.W_OK)
-_assert_exists_and_perm(ZEO_CLIENT_CONF_FILE, os.R_OK)
-_assert_exists_and_perm(ZEO_SERVER_CONF_FILE, os.R_OK)
