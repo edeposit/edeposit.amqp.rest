@@ -81,11 +81,10 @@ def _substitute_globals(config_dict):
         :attr:`_ALLOWED` (str, int, ..) or starts with ``_`` are silently
         ignored.
     """
+    if not isinstance(config_dict, dict):
+        raise ValueError("Configuration file must be contained in dictionary!")
+
     constants = _get_all_constants()
-
-    if type(config_dict) != dict:
-        return
-
     for key, val in config_dict.iteritems():
         if key in constants and type(val) in _ALLOWED:
             globals()[key] = val
@@ -114,7 +113,7 @@ def _assert_constraints():
     _assert_exists_and_perm(ZEO_SERVER_CONF_FILE, os.R_OK)
 
 
-def _read_from_paths(mocked_path=None):
+def _read_from_paths():
     """
     Try to read data from configuration paths ($HOME/_SETTINGS_PATH,
     /etc/_SETTINGS_PATH).
@@ -129,16 +128,24 @@ def _read_from_paths(mocked_path=None):
     elif os.path.exists(etc_path):
         read_path = etc_path
 
-    if mocked_path:
-        read_path = mocked_path
+    if not read_path:
+        return
 
-    if read_path:
-        with open(read_path) as f:
-            _substitute_globals(
-                json.loads(f.read())
-            )
+    with open(read_path) as f:
+        return f.read()
+
+
+def _apply_settings():
+    json_settings = _read_from_paths()
+
+    if "JSON_SETTINGS" in os.environ:
+        json_settings = os.environ["JSON_SETTINGS"]
+
+    _substitute_globals(
+        json.loads(json_settings)
+    )
 
     _assert_constraints()
 
 
-_read_from_paths()
+_apply_settings()
