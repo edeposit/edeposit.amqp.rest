@@ -21,7 +21,26 @@ from .. import settings
 # Functions & classes =========================================================
 @total_ordering
 class UploadRequest(Persistent):
+    """
+    This object works as container for metadata and file uploaded thru REST.
+
+    Uploaded files are automatically put into BalancedDiscStorage.
+
+    Attributes:
+        cache_dir (str): Directory for BalancedDiscStorage.
+        metadata (dict): Dictionary with file's metadata.
+        bds_id (str): Hash of the file in BalancedDiscStorage.
+        created (float): Timestamp when the object was created.
+    """
     def __init__(self, metadata, file_obj, cache_dir=settings.WEB_CACHE):
+        """
+        Constructor.
+
+        metadata (dict): Dictionary with file's metadata.
+        file_obj (file): Reference to opened file object.
+        cache_dir (str): Path to the directory for BalancedDiscStorage. Default
+            :attr:`.settings.WEB_CACHE`.
+        """
         self.cache_dir = cache_dir
         self.metadata = metadata
 
@@ -31,9 +50,24 @@ class UploadRequest(Persistent):
         self.created = time.time()
 
     def _bds(self):
+        """
+        Dynamically created BalancedDiscStorage object.
+
+        This is used, because I don't want to store the BalancedDiscStorage
+        instance in ZODB.
+
+        Returns:
+            obj: BalancedDiscStorage instance.
+        """
         return BalancedDiscStorage(self.cache_dir)
 
     def get_file_obj(self):
+        """
+        Get back reference to opened file object in BalancedDiscStorage.
+
+        Returns:
+            file: Opened file object.
+        """
         with transaction.manager:
             return open(
                 self._bds().file_path_from_hash(self.bds_id),
@@ -41,6 +75,14 @@ class UploadRequest(Persistent):
             )
 
     def remove_file(self):
+        """
+        Remove the file from BalancedDiscStorage.
+
+        Warning:
+            You should do this before you will garbage collect this object,
+            because otherwise you will have a lot of files hanging in your
+            BalancedDiscStorage.
+        """
         self._bds().delete_by_hash(self.bds_id)
 
     def __eq__(self, obj):
