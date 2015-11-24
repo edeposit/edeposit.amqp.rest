@@ -12,11 +12,12 @@ import pytest
 
 from BalancedDiscStorage import BalancedDiscStorage
 
+from rest import settings
+
 from rest.database.cache_handler import CacheHandler
 from rest.database.cache_handler import UploadRequest
 
 
-# Variables ===================================================================
 # Functions ===================================================================
 def random_string(length):
     return ''.join(
@@ -41,6 +42,14 @@ def upload_request(tmpdir_factory):
     )
 
 
+@pytest.fixture
+def cache_handler(client_conf_path):
+    return CacheHandler(
+        conf_path=client_conf_path,
+        project_key=settings.PROJECT_KEY,
+    )
+
+
 # Tests =======================================================================
 def test_UploadRequest(upload_request):
     with upload_request.get_file_obj() as f:
@@ -61,3 +70,22 @@ def test_UploadRequest_operators(tmpdir_factory):
     second = upload_request(tmpdir_factory)
 
     assert first != second
+
+
+def test_CacheHandler(cache_handler, upload_request):
+    assert cache_handler.is_empty()
+
+    with pytest.raises(ValueError):
+        cache_handler.get_one()
+
+    cache_handler.add_upload_request(upload_request)
+
+    assert not cache_handler.is_empty()
+    assert cache_handler.get_one() == upload_request
+    assert not cache_handler.is_empty()
+    assert cache_handler
+
+    assert cache_handler.pop() == upload_request
+    assert cache_handler.is_empty()
+    assert not cache_handler
+    assert not cache_handler.pop()
