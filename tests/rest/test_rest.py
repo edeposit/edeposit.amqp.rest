@@ -16,7 +16,6 @@ import pytest
 import requests
 import dhtmlparser
 from requests.auth import HTTPBasicAuth
-from zeo_connector_defaults import CLIENT_CONF_PATH
 
 
 # Variables ===================================================================
@@ -39,7 +38,7 @@ def circuit_breaker_http_retry():
 
 # Fixtures ====================================================================
 @pytest.fixture(scope="module", autouse=True)
-def bottle_server(request, zeo):
+def bottle_server(request, zeo, client_conf_path):
     # run the bottle REST server
     def run_bottle():
         command_path = os.path.join(
@@ -52,7 +51,7 @@ def bottle_server(request, zeo):
         global SERV
         SERV = subprocess.Popen([
             command_path,
-            "--zeo-client-conf-file", CLIENT_CONF_PATH,
+            "--zeo-client-conf-file", client_conf_path,
             "--port", str(PORT),
             "--host", "127.0.0.1",
             "--server", "paste",
