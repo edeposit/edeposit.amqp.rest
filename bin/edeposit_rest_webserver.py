@@ -123,10 +123,6 @@ def submit_publication(json_metadata):
     file_key = request.files.keys()[0]
     upload_obj = request.files[file_key].file
 
-    # save the file to the BalancedDiscStorage
-    bds = BalancedDiscStorage(settings.WEB_CACHE)
-    bds_id = bds.add_file(upload_obj)
-
     # TODO: napojit na DB
     # metadata
     # bds_id
