@@ -21,15 +21,17 @@ from .. import settings
 # Functions & classes =========================================================
 @total_ordering
 class UploadRequest(Persistent):
-    def __init__(self, metadata, file_obj):
-        # save the file to the BalancedDiscStorage
-        self.bds_id = self._bds().add_file(file_obj)
-
+    def __init__(self, metadata, file_obj, cache_dir=settings.WEB_CACHE):
+        self.cache_dir = cache_dir
         self.metadata = metadata
+
+        # save the file to the BalancedDiscStorage
+        self.bds_id = self._bds().add_file(file_obj).hash
+
         self.created = time.time()
 
     def _bds(self):
-        return BalancedDiscStorage(settings.WEB_CACHE)
+        return BalancedDiscStorage(self.cache_dir)
 
     def get_file_obj(self):
         with transaction.manager:
