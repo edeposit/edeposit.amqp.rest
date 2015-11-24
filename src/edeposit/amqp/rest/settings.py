@@ -14,6 +14,8 @@ See :attr:`_SETTINGS_PATH` for details.
 Note:
     If the first path is found, other is ignored.
 
+There is also possibility to read data from ``JSON_SETTINGS`` env variable.
+
 Example of the configuration file (``$HOME/edeposit/rest.json``)::
 
     {
@@ -38,7 +40,6 @@ PROJECT_KEY = "edeposit_rest"  #: Don't change this!
 WEB_ADDR = "localhost"  #: Address where the webserver should listen.
 WEB_PORT = 8080  #: Port for the webserver.
 WEB_SERVER = 'paste'  #: Use `paste` for threading.
-WEB_DB_TIMEOUT = 30  #: How often should web refresh connection to DB.
 WEB_DEBUG = False  #: Turn on web debug messages?
 WEB_RELOADER = False  #: Turn on reloader for webserver?
 
