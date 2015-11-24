@@ -43,10 +43,12 @@ try:
     # from rest import zconf
     from rest import settings
     from rest.database import UserHandler
+    from rest.database import CacheHandler
 except ImportError:
     # from edeposit.amqp.rest import zconf
     from edeposit.amqp.rest import settings
     from edeposit.amqp.rest.database import UserHandler
+    from edeposit.amqp.rest.database import CacheHandler
 
 
 # Variables ===================================================================
@@ -121,11 +123,14 @@ def submit_publication(json_metadata):
 
     # get handler to upload object
     file_key = request.files.keys()[0]
-    upload_obj = request.files[file_key].file
+    upload_file = request.files[file_key].file
 
-    # TODO: napojit na DB
-    # metadata
-    # bds_id
+    # put it into the cache database
+    cache = CacheHandler()
+    cache.add(
+        metadata=metadata,
+        file_obj=upload_file,
+    )
 
     return metadata
 
