@@ -15,7 +15,9 @@ from zeo_connector.examples import DatabaseHandler
 
 from BalancedDiscStorage import BalancedDiscStorage
 
-from .. import settings
+from ..settings import WEB_CACHE
+from ..settings import PROJECT_KEY
+from ..settings import ZEO_CLIENT_CONF_FILE
 
 
 # Functions & classes =========================================================
@@ -32,7 +34,7 @@ class UploadRequest(Persistent):
         bds_id (str): Hash of the file in BalancedDiscStorage.
         created (float): Timestamp when the object was created.
     """
-    def __init__(self, metadata, file_obj, cache_dir=settings.WEB_CACHE):
+    def __init__(self, metadata, file_obj, cache_dir=WEB_CACHE):
         """
         Constructor.
 
@@ -100,13 +102,16 @@ class CacheHandler(DatabaseHandler):
         cache_key (str): Key used to access the ZEO `path`.
         cache (obj): ZEO tree object.
     """
-    def __init__(self, conf_path, project_key):
+    def __init__(self, conf_path=ZEO_CLIENT_CONF_FILE,
+                 project_key=PROJECT_KEY):
         """
         Constructor.
 
         Args:
             conf_path (str): Path to the file with ZEO client configuration.
-            project_key (str): Key used to access the ZEO `root`.
+                Default :attr:`.ZEO_CLIENT_CONF_FILE`.
+            project_key (str): Key used to access the ZEO `root`. Default
+                :attr:`.PROJECT_KEY`.
         """
         super(self.__class__, self).__init__(
             conf_path=conf_path,
