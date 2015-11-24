@@ -64,15 +64,22 @@ class CacheHandler(DatabaseHandler):
         self.cache = self._get_key_or_create(self.cache_key)
 
     @transaction_manager
-    def add_upload_request(self, metadata, bds_id):
-        self.cache[bds_id] = UploadRequest(metadata, bds_id)
+    def add(self, metadata, file_obj):
+        req = UploadRequest(metadata, file_obj)
+        self.cache[req.bds_id] = req
+
+        return req
 
     @transaction_manager
-    def has_upload_request(self):
-        return len(self.cache.keys()) > 0
+    def add_upload_request(self, upload_request):
+        self.cache[upload_request.bds_id] = upload_request
 
     @transaction_manager
-    def get_upload_request(self):
+    def is_empty(self):
+        return len(self.cache.keys()) == 0
+
+    @transaction_manager
+    def get_one(self):
         if not self.cache.keys():
             raise ValueError("There is no cached upload request.")
 
@@ -80,7 +87,8 @@ class CacheHandler(DatabaseHandler):
 
         return oldest
 
-    def pop_upload_requst(self):
+    @transaction_manager
+    def pop(self):
         if not self.cache.keys():
             return None
 
@@ -89,3 +97,7 @@ class CacheHandler(DatabaseHandler):
         del self.cache[oldest.bds_id]
 
         return oldest
+
+    @transaction_manager
+    def __len__(self):
+        return len(self.cache)
