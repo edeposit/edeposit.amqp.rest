@@ -94,8 +94,20 @@ class UploadRequest(Persistent):
 
 class CacheHandler(DatabaseHandler):
     """
+    Small queue-like database for the :class:`UploadRequest` objects.
+
+    Attributes:
+        cache_key (str): Key used to access the ZEO `path`.
+        cache (obj): ZEO tree object.
     """
     def __init__(self, conf_path, project_key):
+        """
+        Constructor.
+
+        Args:
+            conf_path (str): Path to the file with ZEO client configuration.
+            project_key (str): Key used to access the ZEO `root`.
+        """
         super(self.__class__, self).__init__(
             conf_path=conf_path,
             project_key=project_key
@@ -107,21 +119,54 @@ class CacheHandler(DatabaseHandler):
 
     @transaction_manager
     def add(self, metadata, file_obj):
-        req = UploadRequest(metadata, file_obj)
-        self.cache[req.bds_id] = req
+        """
+        Create and add new item at the bottom of the queue.
 
-        return req
+        Args:
+            metadata (dict/obj): Metadata structure.
+            file_obj (file): Opened file with data.
+
+        Returns:
+            obj: :class:`UploadRequest` instance.
+        """
+        return self.add_upload_request(UploadRequest(metadata, file_obj))
 
     @transaction_manager
     def add_upload_request(self, upload_request):
+        """
+        Add new :class:`UploadRequest` at the bottom of the queue.
+
+        Args:
+            upload_request (obj): :class:`UploadRequest` instance.
+
+        Returns:
+            obj: :class:`UploadRequest` instance.
+        """
+        error_msg = "`upload_request` parameter have to be instance of "
+        error_msg += "UploadRequest!"
+        assert isinstance(upload_request, UploadRequest), error_msg
+
         self.cache[upload_request.bds_id] = upload_request
+        return upload_request
 
     @transaction_manager
     def is_empty(self):
+        """
+        Is the queue empty?
+
+        Returns:
+            bool: True if the queue is empty.
+        """
         return len(self.cache.keys()) == 0
 
     @transaction_manager
-    def get_one(self):
+    def top(self):
+        """
+        Get the oldest item from the queue, but leave the item at its position.
+
+        Returns:
+            obj: :class:`UploadRequest` instance.
+        """
         if not self.cache.keys():
             raise ValueError("There is no cached upload request.")
 
@@ -131,6 +176,12 @@ class CacheHandler(DatabaseHandler):
 
     @transaction_manager
     def pop(self):
+        """
+        Remove the oldest item from the queue and return it.
+
+        Returns:
+            obj: :class:`UploadRequest` instance.
+        """
         if not self.cache.keys():
             return None
 

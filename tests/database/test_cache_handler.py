@@ -76,12 +76,12 @@ def test_CacheHandler(cache_handler, upload_request):
     assert cache_handler.is_empty()
 
     with pytest.raises(ValueError):
-        cache_handler.get_one()
+        cache_handler.top()
 
     cache_handler.add_upload_request(upload_request)
 
     assert not cache_handler.is_empty()
-    assert cache_handler.get_one() == upload_request
+    assert cache_handler.top() == upload_request
     assert not cache_handler.is_empty()
     assert cache_handler
 
