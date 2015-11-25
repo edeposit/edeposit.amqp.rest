@@ -44,6 +44,13 @@ class StatusMessage(Persistent):
         timestamp (float): Python timestamp format.
     """
     def __init__(self, message, timestamp):
+        """
+        Constructor.
+
+        Args:
+            message (str): See :attr:`message` for details.
+            timestamp (float): See :attr:`timestamp` for details.
+        """
         self.message = message.strip()
         self.timestamp = float(timestamp)
 
