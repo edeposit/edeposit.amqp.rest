@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 
 import sys
 import json
+import uuid
 import os.path
 import argparse
 from os.path import join
@@ -23,13 +24,10 @@ from bottle import auth_basic
 from bottle import SimpleTemplate
 
 from bottle_rest import form_to_params
-from BalancedDiscStorage import BalancedDiscStorage
 
 import dhtmlparser
 from docutils.core import publish_parts
 
-# TODO: ..
-# from edeposit.amqp.models import EpublicationValidator
 from models import SchemaError
 from models import EpublicationValidator
 from models import czech_to_edeposit_dict
@@ -40,15 +38,15 @@ from models.libraries import DEFAULT_LIBRARY
 sys.path.insert(0, join(dirname(__file__), "../src/edeposit/amqp"))
 
 try:
-    # from rest import zconf
     from rest import settings
     from rest.database import UserHandler
     from rest.database import CacheHandler
+    from rest.database import StatusHandler
 except ImportError:
-    # from edeposit.amqp.rest import zconf
     from edeposit.amqp.rest import settings
     from edeposit.amqp.rest.database import UserHandler
     from edeposit.amqp.rest.database import CacheHandler
+    from edeposit.amqp.rest.database import StatusHandler
 
 
 # Variables ===================================================================
@@ -125,14 +123,25 @@ def submit_publication(json_metadata):
     file_key = request.files.keys()[0]
     upload_file = request.files[file_key].file
 
+    # generate the ID for the REST request
+    rest_id = str(uuid.uuid4())
+    metadata["rest_id"] = rest_id
+
     # put it into the cache database
-    cache = CacheHandler()
-    cache.add(
+    cache_db = CacheHandler()
+    cache_db.add(
         metadata=metadata,
         file_obj=upload_file,
     )
 
-    return metadata
+    # put the tracking request to the StatusHandler
+    status_db = StatusHandler()
+    status_db.register_status_tracking(
+        username=request.environ["username"],
+        rest_id=rest_id
+    )
+
+    return rest_id
 
 
 @get(join(V1_PATH, "structures", "riv"))
