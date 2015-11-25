@@ -9,6 +9,9 @@ import transaction
 from zeo_connector import transaction_manager
 from zeo_connector.examples import DatabaseHandler
 
+from ..settings import PROJECT_KEY
+from ..settings import ZEO_CLIENT_CONF_FILE
+
 
 # Functions & classes =========================================================
 def create_hash(password):
@@ -23,7 +26,17 @@ class UserHandler(DatabaseHandler):
         users_key (str): Key which is used to access database.
         users (obj): Dict-like object in ZEO.
     """
-    def __init__(self, conf_path, project_key):
+    def __init__(self, conf_path=ZEO_CLIENT_CONF_FILE,
+                 project_key=PROJECT_KEY):
+        """
+        Constructor.
+
+        Args:
+            conf_path (str): Path to the file with ZEO client configuration.
+                Default :attr:`.ZEO_CLIENT_CONF_FILE`.
+            project_key (str): Key used to access the ZEO `root`. Default
+                :attr:`.PROJECT_KEY`.
+        """
         super(self.__class__, self).__init__(
             conf_path=conf_path,
             project_key=project_key

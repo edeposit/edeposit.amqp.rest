@@ -16,6 +16,9 @@ from BTrees.OOBTree import OOSet
 from zeo_connector import transaction_manager
 from zeo_connector.examples import DatabaseHandler
 
+from ..settings import PROJECT_KEY
+from ..settings import ZEO_CLIENT_CONF_FILE
+
 
 # Variables ===================================================================
 DAY = 60 * 60 * 24  #: Day in seconds.
@@ -137,14 +140,16 @@ class StatusHandler(DatabaseHandler):
     Database handler for tracking :class:`StatusInfo` and
     :class:`StatusMessage` objects sent tru AMQP.
     """
-    def __init__(self, conf_path, project_key):
+    def __init__(self, conf_path=ZEO_CLIENT_CONF_FILE,
+                 project_key=PROJECT_KEY):
         """
         Constructor.
 
         Args:
-            conf_path (str): Path to the ZEO client configuration file.
-            project_key (str): Project key used to access the StatusHandler's
-                data in DB dict.
+            conf_path (str): Path to the file with ZEO client configuration.
+                Default :attr:`.ZEO_CLIENT_CONF_FILE`.
+            project_key (str): Key used to access the ZEO `root`. Default
+                :attr:`.PROJECT_KEY`.
         """
         super(self.__class__, self).__init__(
             conf_path=conf_path,
