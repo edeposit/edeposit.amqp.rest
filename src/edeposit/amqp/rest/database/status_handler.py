@@ -133,6 +133,9 @@ class StatusInfo(Persistent):
         return sorted(self.messages, key=lambda x: x.timestamp)
 
     def __eq__(self, obj):
+        if not isinstance(obj, StatusInfo):
+            return False
+
         return self.rest_id == obj.rest_id and self.messages == obj.messages
 
     def __ne__(self, obj):
@@ -286,7 +289,7 @@ class StatusHandler(DatabaseHandler):
             username (str): Selected username.
 
         Returns:
-            OrderedDict: ``{rest_id: [messages]}``
+            list: List of :class:`StatusInfo` objects sorted by creation time.
         """
         ids = self.username_to_ids.get(username, None)
 
@@ -308,10 +311,7 @@ class StatusHandler(DatabaseHandler):
             if status_info is not None
         )
 
-        return OrderedDict(
-            (si.rest_id, si.get_messages())
-            for si in sorted(status_infos, key=lambda x: x.registered_ts)
-        )
+        return sorted(status_infos, key=lambda x: x.registered_ts)
 
     @transaction_manager
     def remove_status_info(self, rest_id, username=None):

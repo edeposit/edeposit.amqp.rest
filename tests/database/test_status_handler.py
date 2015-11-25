@@ -86,7 +86,9 @@ def test_status_handler_register_status_tracking(status_handler):
         status_handler.query_statuses(USERNAME)
 
     status_handler.register_status_tracking(USERNAME, REST_ID)
-    assert status_handler.query_statuses(USERNAME) == {REST_ID: []}
+    statuses = status_handler.query_statuses(USERNAME)
+    assert statuses[0].rest_id == REST_ID
+    assert statuses[0].get_messages() == []
 
 
 def test_status_handler_save_status_update(status_handler):
@@ -100,7 +102,8 @@ def test_status_handler_save_status_update(status_handler):
     )
 
     query = status_handler.query_statuses(USERNAME)
-    assert query == {REST_ID: [StatusMessage(m, t)]}
+    assert query[0].rest_id == REST_ID
+    assert query[0].get_messages() == [StatusMessage(m, t)]
 
     # this should do nothing - unregistered rest_id
     status_handler.save_status_update(
@@ -128,7 +131,8 @@ def test_status_handler_query_status_exceptions(status_handler):
 
 
 def test_status_handler_remove_status_info(status_handler):
-    assert ALT_REST_ID in status_handler.query_statuses(USERNAME)
+    statuses = status_handler.query_statuses(USERNAME)
+    assert ALT_REST_ID in [status.rest_id for status in statuses]
 
     with pytest.raises(AccessDeniedException):
         status_handler.remove_status_info(
