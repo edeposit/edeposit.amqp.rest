@@ -5,4 +5,5 @@
 #
 # Imports =====================================================================
 from user_handler import UserHandler
+from cache_handler import CacheHandler
 from status_handler import StatusHandler
