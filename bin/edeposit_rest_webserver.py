@@ -105,7 +105,23 @@ def track_publication(uid=None):
 @route(join(V1_PATH, "track"))  # TODO: change from route() to get()
 @auth_basic(check_auth)
 def track_publications():
-    pass
+    status_db = StatusHandler()
+
+    # TODO: handle errors, rewrite to functions
+    return {
+        status.rest_id: {
+            "pub_url": status.pub_url,
+            "book_name": status.book_name,
+            "messages": [
+                {
+                    "message": msg.message,
+                    "timestamp": msg.timestamp,
+                }
+                for msg in status.get_messages()
+            ]
+        }
+        for status in status_db.query_statuses(request.environ["username"])
+    }
 
 
 @get(join(V1_PATH, "submit"))  # TODO: remove
