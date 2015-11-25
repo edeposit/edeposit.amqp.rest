@@ -214,6 +214,8 @@ class CacheHandler(DatabaseHandler):
 
         del self.cache[oldest.bds_id]
 
+        self.zeo.pack()
+
         return oldest
 
     @transaction_manager
