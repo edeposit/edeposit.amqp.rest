@@ -113,6 +113,7 @@ def track_publications():
 @auth_basic(check_auth)
 @form_to_params
 def submit_publication(json_metadata):
+    username = request.environ["username"]
     metadata = process_metadata(json_metadata)
 
     # make sure that user is sending the file with the metadata
@@ -130,6 +131,8 @@ def submit_publication(json_metadata):
     # put it into the cache database
     cache_db = CacheHandler()
     cache_db.add(
+        username=username,
+        rest_id=rest_id,
         metadata=metadata,
         file_obj=upload_file,
     )
@@ -137,7 +140,7 @@ def submit_publication(json_metadata):
     # put the tracking request to the StatusHandler
     status_db = StatusHandler()
     status_db.register_status_tracking(
-        username=request.environ["username"],
+        username=username,
         rest_id=rest_id
     )
 

@@ -36,6 +36,8 @@ def upload_request(tmpdir_factory):
         f.write(random_string(20))
 
     return UploadRequest(
+        username="someuser",
+        rest_id="rest_id",
         metadata={"meta": "data"},
         file_obj=open(file_path),
         cache_dir=str(tmpdir_factory.mktemp("bds")),

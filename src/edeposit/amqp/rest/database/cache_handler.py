@@ -31,20 +31,30 @@ class UploadRequest(Persistent):
     Attributes:
         cache_dir (str): Directory for BalancedDiscStorage.
         metadata (dict): Dictionary with file's metadata.
+        username (str):  Username which is later used to direct the request to
+            proper user account in Edeposit.
+        rest_id (str): ID of the request.
         bds_id (str): Hash of the file in BalancedDiscStorage.
         created (float): Timestamp when the object was created.
     """
-    def __init__(self, metadata, file_obj, cache_dir=WEB_CACHE):
+    def __init__(self, username, rest_id, metadata, file_obj,
+                 cache_dir=WEB_CACHE):
         """
         Constructor.
 
-        metadata (dict): Dictionary with file's metadata.
-        file_obj (file): Reference to opened file object.
-        cache_dir (str): Path to the directory for BalancedDiscStorage. Default
-            :attr:`.settings.WEB_CACHE`.
+        Args:
+            username (str): Username which is later used to direct the request
+                to proper user account in Edeposit.
+            rest_id (str): ID of the request.
+            metadata (dict): Dictionary with file's metadata.
+            file_obj (file): Reference to opened file object.
+            cache_dir (str): Path to the directory for BalancedDiscStorage.
+                Default :attr:`.settings.WEB_CACHE`.
         """
         self.cache_dir = cache_dir
         self.metadata = metadata
+        self.username = username
+        self.rest_id = rest_id
 
         # save the file to the BalancedDiscStorage
         self.bds_id = self._bds().add_file(file_obj).hash
@@ -123,18 +133,28 @@ class CacheHandler(DatabaseHandler):
         self.cache = self._get_key_or_create(self.cache_key)
 
     @transaction_manager
-    def add(self, metadata, file_obj):
+    def add(self, username, rest_id, metadata, file_obj):
         """
         Create and add new item at the bottom of the queue.
 
         Args:
+            username (str): Username which is later used to direct the request
+                to proper user account in Edeposit.
+            rest_id (str): ID of the request.
             metadata (dict/obj): Metadata structure.
             file_obj (file): Opened file with data.
 
         Returns:
             obj: :class:`UploadRequest` instance.
         """
-        return self.add_upload_request(UploadRequest(metadata, file_obj))
+        return self.add_upload_request(
+            UploadRequest(
+                username=username,
+                rest_id=rest_id,
+                metadata=metadata,
+                file_obj=file_obj,
+            )
+        )
 
     @transaction_manager
     def add_upload_request(self, upload_request):
