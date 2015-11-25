@@ -26,9 +26,10 @@ SERV = None
 
 
 # Functions ===================================================================
-def circuit_breaker_http_retry():
-    for i in range(10):
+def circuit_breaker_http_retry(max_retry=10):
+    for i in range(max_retry):
         try:
+            print "Connecting to server .. %d/%d" % (i + 1, max_retry)
             return requests.get(URL).raise_for_status()
         except Exception:
             time.sleep(1)
