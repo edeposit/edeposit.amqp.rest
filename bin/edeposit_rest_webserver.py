@@ -94,32 +94,47 @@ def process_metadata(json_metadata):
     return czech_to_edeposit_dict(metadata)
 
 
+def status_info_to_dict(si):
+    def msg_to_dict(msg):
+        return {
+            "message": msg.message,
+            "timestamp": msg.timestamp,
+        }
+
+    return {
+        "pub_url": si.pub_url,
+        "book_name": si.book_name,
+        "messages": [
+            msg_to_dict(msg)
+            for msg in si.get_messages()
+        ]
+    }
+
+
 # API definition ==============================================================
-@route(join(V1_PATH, "track/<uid>"))  # TODO: change from route() to get()
+@route(join(V1_PATH, "track/<rest_id>"))  # TODO: change from route() to get()
 @auth_basic(check_auth)
-def track_publication(uid=None):
-    if not uid:
+def track_publication(rest_id=None):
+    if not rest_id:
         return track_publications()
 
+    status_db = StatusHandler()
+    return status_info_to_dict(
+        status_db.query_status(
+            rest_id=rest_id,
+            username=request.environ["username"],
+        )
+    )
 
-@route(join(V1_PATH, "track"))  # TODO: change from route() to get()
+
+@get(join(V1_PATH, "track"))
 @auth_basic(check_auth)
 def track_publications():
     status_db = StatusHandler()
 
-    # TODO: handle errors, rewrite to functions
+    # TODO: handle errors
     return {
-        status.rest_id: {
-            "pub_url": status.pub_url,
-            "book_name": status.book_name,
-            "messages": [
-                {
-                    "message": msg.message,
-                    "timestamp": msg.timestamp,
-                }
-                for msg in status.get_messages()
-            ]
-        }
+        status.rest_id: status_info_to_dict(status)
         for status in status_db.query_statuses(request.environ["username"])
     }
 
