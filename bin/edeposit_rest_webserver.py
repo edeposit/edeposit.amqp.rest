@@ -55,7 +55,7 @@ except ImportError:
 TEMPLATE_PATH = join(
     dirname(__file__), "../src/edeposit/amqp/rest/html_templates"
 )
-V1_PATH = "/api/v1/"
+V1_PATH = "/api/v1/"  # TODO: api_v1
 USER_DB = None
 
 
@@ -128,7 +128,7 @@ def handle_errors(fn):
 
 
 # API definition ==============================================================
-@route(join(V1_PATH, "track/<rest_id>"))  # TODO: change from route() to get()
+@get(join(V1_PATH, "track/<rest_id>"))
 @auth_basic(check_auth)
 @handle_errors
 def track_publication(rest_id=None):

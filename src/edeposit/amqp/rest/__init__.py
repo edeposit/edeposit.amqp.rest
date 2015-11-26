@@ -11,6 +11,7 @@ from structures import UploadRequest
 
 import settings
 from database import UserHandler as _UserHandler
+from database import StatusHandler as _StatusHandler
 
 
 # Functions & classes =========================================================
@@ -46,15 +47,27 @@ def reactToAMQPMessage(message, send_back):
         conf_path=settings.ZEO_CLIENT_CONF_FILE,
         project_key=settings.PROJECT_KEY,
     )
+    status_db = _StatusHandler(
+        conf_path=settings.ZEO_CLIENT_CONF_FILE,
+        project_key=settings.PROJECT_KEY,
+    )
 
     if _instanceof(message, SaveLogin):
         return user_db.add_user(
             username=message.username,
             pw_hash=message.password_hash,
         )
-    elif _instanceof(message, SaveLogin):
+    elif _instanceof(message, RemoveLogin):
         return user_db.remove_user(
             username=message.username
+        )
+    elif _instanceof(message, StatusUpdate):
+        status_db.save_status_update(
+            rest_id=message.rest_id,
+            message=message.message,
+            timestamp=message.timestamp,
+            book_name=message.book_name,
+            pub_url=message.pub_url,
         )
 
     raise ValueError("'%s' is unknown type of request!" % str(type(message)))
