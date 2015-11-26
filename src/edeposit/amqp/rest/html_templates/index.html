@@ -192,11 +192,45 @@ Návratovou hodnotou volání url ``/submit`` je `rest_id`, unikátní identifik
 /track
 ++++++
 
+Volání této části API vrátí stavy všech přes REST API ohlášených, ne-expirovaných dokumentů. Expirace probíhá řádově po měsících.
+
+Návratová hodnota
+^^^^^^^^^^^^^^^^^
+
+Typ slovník (dictionary) se strukturou ``{"rest_id": detaily}``, kde `detaily` je další slovník o následující struktuře:
+
++-------------+--------------------------------------------------------------------------+
+| Název klíče |                                  Význam                                  |
++=============+==========================================================================+
+| pub_url     | URL knihy v edepositu.                                                   |
++-------------+--------------------------------------------------------------------------+
+| book_name   | Název knihy v edepositu.                                                 |
++-------------+--------------------------------------------------------------------------+
+| messages    | Pole slovníků se strukturou ``{"message": "text", "timestamp": float}``. |
++-------------+--------------------------------------------------------------------------+
+
+Příklad
+^^^^^^^
+
+
 
 /track/<rest_id>
 ++++++++++++++++
 
+Návratová hodnota
+^^^^^^^^^^^^^^^^^
 
+Slovník s následující strukturou:
+
++-------------+--------------------------------------------------------------------------+
+| Název klíče |                                  Význam                                  |
++=============+==========================================================================+
+| pub_url     | URL knihy v edepositu.                                                   |
++-------------+--------------------------------------------------------------------------+
+| book_name   | Název knihy v edepositu.                                                 |
++-------------+--------------------------------------------------------------------------+
+| messages    | Pole slovníků se strukturou ``{"message": "text", "timestamp": float}``. |
++-------------+--------------------------------------------------------------------------+
 
 </rst>
 
