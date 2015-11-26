@@ -11,6 +11,7 @@ import json
 import uuid
 import os.path
 import argparse
+import traceback
 from os.path import join
 from os.path import dirname
 
@@ -21,6 +22,7 @@ from bottle import route
 from bottle import abort
 from bottle import request
 from bottle import auth_basic
+from bottle import HTTPResponse
 from bottle import SimpleTemplate
 
 from bottle_rest import form_to_params
@@ -111,9 +113,24 @@ def status_info_to_dict(si):
     }
 
 
+def handle_errors(fn):
+    def handle_errors_decorator(*args, **kwargs):
+        try:
+            return fn(*args, **kwargs)
+        except Exception as e:
+            msg = {"error": e.message}
+            if settings.WEB_DEBUG:
+                msg["traceback"] = traceback.format_exc().strip()
+
+            raise HTTPResponse(json.dumps(msg), 400)
+
+    return handle_errors_decorator
+
+
 # API definition ==============================================================
 @route(join(V1_PATH, "track/<rest_id>"))  # TODO: change from route() to get()
 @auth_basic(check_auth)
+@handle_errors
 def track_publication(rest_id=None):
     if not rest_id:
         return track_publications()
@@ -129,10 +146,10 @@ def track_publication(rest_id=None):
 
 @get(join(V1_PATH, "track"))
 @auth_basic(check_auth)
+@handle_errors
 def track_publications():
     status_db = StatusHandler()
 
-    # TODO: handle errors
     return {
         status.rest_id: status_info_to_dict(status)
         for status in status_db.query_statuses(request.environ["username"])
@@ -143,6 +160,7 @@ def track_publications():
 @post(join(V1_PATH, "submit"))
 @auth_basic(check_auth)
 @form_to_params
+@handle_errors
 def submit_publication(json_metadata):
     username = request.environ["username"]
     metadata = process_metadata(json_metadata)
