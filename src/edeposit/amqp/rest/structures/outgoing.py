@@ -9,7 +9,10 @@ from collections import namedtuple
 
 # Variables ===================================================================
 # Functions & classes =========================================================
-class UploadRequest(namedtuple("UploadRequest", ["username", "request"])):
+class UploadRequest(namedtuple("UploadRequest", ["username",
+                                                 "rest_id",
+                                                 "b64_data",
+                                                 "metadata"])):
     """
     """
 
