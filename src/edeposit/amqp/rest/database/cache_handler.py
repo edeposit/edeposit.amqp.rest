@@ -6,6 +6,7 @@
 # Imports =====================================================================
 import time
 from functools import total_ordering
+from contextlib import contextmanager
 
 import transaction
 from persistent import Persistent
@@ -213,10 +214,18 @@ class CacheHandler(DatabaseHandler):
         oldest = min(self.cache.values(), key=lambda x: x.created)
 
         del self.cache[oldest.bds_id]
-
         self.zeo.pack()
 
         return oldest
+
+    @contextmanager
+    def pop_manager(self):
+        oldest = min(self.cache.values(), key=lambda x: x.created)
+
+        yield oldest
+
+        del self.cache[oldest.bds_id]
+        self.zeo.pack()
 
     @transaction_manager
     def __len__(self):
