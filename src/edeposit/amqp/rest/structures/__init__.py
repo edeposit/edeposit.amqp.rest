@@ -4,6 +4,7 @@
 # Interpreter version: python 2.7
 #
 # Imports =====================================================================
+from incomming import CacheTick
 from incomming import SaveLogin
 from incomming import RemoveLogin
 from incomming import StatusUpdate

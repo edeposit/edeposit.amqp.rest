@@ -4,6 +4,7 @@
 # Interpreter version: python 2.7
 #
 # Imports =====================================================================
+from structures import CacheTick
 from structures import SaveLogin
 from structures import RemoveLogin
 from structures import StatusUpdate
