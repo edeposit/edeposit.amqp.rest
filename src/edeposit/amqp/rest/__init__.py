@@ -4,6 +4,9 @@
 # Interpreter version: python 2.7
 #
 # Imports =====================================================================
+import base64
+import tempfile
+
 from structures import CacheTick
 from structures import SaveLogin
 from structures import RemoveLogin
@@ -12,6 +15,7 @@ from structures import UploadRequest
 
 import settings
 from database import UserHandler as _UserHandler
+from database import CacheHandler as _CacheHandler
 from database import StatusHandler as _StatusHandler
 
 
@@ -52,6 +56,10 @@ def reactToAMQPMessage(message, send_back):
         conf_path=settings.ZEO_CLIENT_CONF_FILE,
         project_key=settings.PROJECT_KEY,
     )
+    cache_db = _CacheHandler(
+        conf_path=settings.ZEO_CLIENT_CONF_FILE,
+        project_key=settings.PROJECT_KEY,
+    )
 
     if _instanceof(message, SaveLogin):
         return user_db.add_user(
@@ -62,6 +70,27 @@ def reactToAMQPMessage(message, send_back):
         return user_db.remove_user(
             username=message.username
         )
+    elif _instanceof(message, CacheTick):
+        if cache_db.is_empty():
+            return
+
+        with cache_db.pop_manager() as cached_request:
+            fp = cached_request.get_file_obj()
+
+            with tempfile.TemporaryFile() as f:
+                base64.encode(fp, f)
+
+                f.seek(0)
+                req = UploadRequest(
+                    username=cached_request.username,
+                    rest_id=cached_request.rest_id,
+                    b64_data=f.read(),
+                    metadata=cached_request.metadata,
+                )
+
+            fp.close()
+
+        return req
     elif _instanceof(message, StatusUpdate):
         status_db.save_status_update(
             rest_id=message.rest_id,
