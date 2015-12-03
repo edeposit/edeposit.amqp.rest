@@ -85,7 +85,7 @@ def process_metadata(json_metadata):
     try:
         metadata = EpublicationValidator.validate(metadata)
     except SchemaError as e:
-        msg = e.message.replace("Missing keys:", "Chybějící klíče:")
+        msg = str(e.message).replace("Missing keys:", "Chybějící klíče:")
         abort(text=msg)
 
     # add DEFAULT_LIBRARY to metadata - it is always present
