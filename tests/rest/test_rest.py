@@ -72,7 +72,7 @@ def bottle_server(request, zeo, client_conf_path):
     request.addfinalizer(shutdown_server)
 
 
-# Tests =======================================================================
+# Functions ===================================================================
 def check_errors(response):
     try:
         response.raise_for_status()
@@ -100,9 +100,11 @@ def send_request(data):
         data={"json_metadata": json.dumps(data)},
         auth=HTTPBasicAuth('user', 'pass'),
         files={'file': "Whatever"},
+        timeout=5,
     )
 
 
+# Tests =======================================================================
 def test_submit_epub_minimal(bottle_server):
     resp = send_request({
         "nazev": "Název",
