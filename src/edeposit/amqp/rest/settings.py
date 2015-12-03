@@ -42,6 +42,7 @@ WEB_PORT = 8080  #: Port for the webserver.
 WEB_SERVER = 'paste'  #: Use `paste` for threading.
 WEB_DEBUG = False  #: Turn on web debug messages?
 WEB_RELOADER = False  #: Turn on reloader for webserver?
+WEB_BE_QUIET = False  #: Be quiet and don't emit debug messages to terminal.
 
 WEB_CACHE = ""  #: Cache for the WEB upload.
 
