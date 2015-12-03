@@ -4,13 +4,8 @@
 # Interpreter version: python 2.7
 #
 # Imports =====================================================================
-import os
-import time
 import json
-import random
 import urlparse
-import threading
-import subprocess
 
 import pytest
 import requests
@@ -18,60 +13,7 @@ import dhtmlparser
 from requests.auth import HTTPBasicAuth
 
 
-# Variables ===================================================================
-PORT = random.randint(20000, 60000)
-URL = "http://127.0.0.1:%d" % PORT
-API_URL = URL + "/api/v1/"
-SERV = None
-
-
-# Functions ===================================================================
-def circuit_breaker_http_retry(max_retry=10):
-    for i in range(max_retry):
-        try:
-            print "Connecting to server .. %d/%d" % (i + 1, max_retry)
-            return requests.get(URL).raise_for_status()
-        except Exception:
-            time.sleep(1)
-
-    raise IOError("Couldn't connect to thread with HTTP server. Aborting.")
-
-
 # Fixtures ====================================================================
-@pytest.fixture(scope="module", autouse=True)
-def bottle_server(request, zeo, client_conf_path):
-    # run the bottle REST server
-    def run_bottle():
-        command_path = os.path.join(
-            os.path.dirname(__file__),
-            "../../bin/edeposit_rest_webserver.py"
-        )
-
-        assert os.path.exists(command_path)
-
-        global SERV
-        SERV = subprocess.Popen([
-            command_path,
-            "--zeo-client-conf-file", client_conf_path,
-            "--port", str(PORT),
-            "--host", "127.0.0.1",
-            "--server", "paste",
-            "--debug",
-            "--quiet",
-        ])
-
-    serv = threading.Thread(target=run_bottle)
-    serv.setDaemon(True)
-    serv.start()
-
-    circuit_breaker_http_retry()
-
-    def shutdown_server():
-        SERV.terminate()
-
-    request.addfinalizer(shutdown_server)
-
-
 # Functions ===================================================================
 def check_errors(response):
     try:
@@ -94,9 +36,9 @@ def check_errors(response):
     return response.text
 
 
-def send_request(data):
+def send_request(url, data):
     return requests.post(
-        urlparse.urljoin(API_URL, "submit"),
+        urlparse.urljoin(url, "submit"),  # web_api_url is gl. fixt.
         data={"json_metadata": json.dumps(data)},
         auth=HTTPBasicAuth('user', 'pass'),
         files={'file': "Whatever"},
@@ -105,8 +47,8 @@ def send_request(data):
 
 
 # Tests =======================================================================
-def test_submit_epub_minimal(bottle_server):
-    resp = send_request({
+def test_submit_epub_minimal(bottle_server, web_api_url):
+    resp = send_request(web_api_url, {
         "nazev": "Název",
         "poradi_vydani": "3",
         "misto_vydani": "Praha",
@@ -118,8 +60,8 @@ def test_submit_epub_minimal(bottle_server):
     assert check_errors(resp)
 
 
-def test_submit_epub_minimal_numeric():
-    resp = send_request({
+def test_submit_epub_minimal_numeric(web_api_url):
+    resp = send_request(web_api_url, {
         "nazev": "Název",
         "poradi_vydani": "3",
         "misto_vydani": "Praha",
@@ -131,8 +73,8 @@ def test_submit_epub_minimal_numeric():
     assert check_errors(resp)
 
 
-def test_submit_epub_minimal_year_fail():
-    resp = send_request({
+def test_submit_epub_minimal_year_fail(web_api_url):
+    resp = send_request(web_api_url, {
         "nazev": "Název",
         "poradi_vydani": "3",
         "misto_vydani": "Praha",
@@ -145,8 +87,8 @@ def test_submit_epub_minimal_year_fail():
         check_errors(resp)
 
 
-def test_submit_epub_optionals():
-    resp = send_request({
+def test_submit_epub_optionals(web_api_url):
+    resp = send_request(web_api_url, {
         "nazev": "Název",
         "poradi_vydani": "3",
         "misto_vydani": "Praha",
@@ -163,8 +105,8 @@ def test_submit_epub_optionals():
     assert check_errors(resp)
 
 
-def test_submit_epub_optionals_price_error():
-    resp = send_request({
+def test_submit_epub_optionals_price_error(web_api_url):
+    resp = send_request(web_api_url, {
         "nazev": "Název",
         "poradi_vydani": "3",
         "misto_vydani": "Praha",
@@ -178,8 +120,8 @@ def test_submit_epub_optionals_price_error():
         check_errors(resp)
 
 
-def test_submit_epub_optionals_isbn_error():
-    resp = send_request({
+def test_submit_epub_optionals_isbn_error(web_api_url):
+    resp = send_request(web_api_url, {
         "nazev": "Název",
         "poradi_vydani": "3",
         "misto_vydani": "Praha",
@@ -192,7 +134,7 @@ def test_submit_epub_optionals_isbn_error():
     with pytest.raises(ValueError):
         check_errors(resp)
 
-    resp = send_request({
+    resp = send_request(web_api_url, {
         "nazev": "Název",
         "poradi_vydani": "3",
         "misto_vydani": "Praha",
@@ -206,8 +148,8 @@ def test_submit_epub_optionals_isbn_error():
         check_errors(resp)
 
 
-def test_submit_epub_optionals_isbn_souboru_publikaci_error():
-    resp = send_request({
+def test_submit_epub_optionals_isbn_souboru_publikaci_error(web_api_url):
+    resp = send_request(web_api_url, {
         "nazev": "Název",
         "poradi_vydani": "3",
         "misto_vydani": "Praha",
@@ -221,8 +163,8 @@ def test_submit_epub_optionals_isbn_souboru_publikaci_error():
         check_errors(resp)
 
 
-def test_submit_epub_optionals_libraries_error():
-    resp = send_request({
+def test_submit_epub_optionals_libraries_error(web_api_url):
+    resp = send_request(web_api_url, {
         "nazev": "Název",
         "poradi_vydani": "3",
         "misto_vydani": "Praha",
@@ -236,8 +178,8 @@ def test_submit_epub_optionals_libraries_error():
         check_errors(resp)
 
 
-def test_submit_epub_optionals_riv_error():
-    resp = send_request({
+def test_submit_epub_optionals_riv_error(web_api_url):
+    resp = send_request(web_api_url, {
         "nazev": "Název",
         "poradi_vydani": "3",
         "misto_vydani": "Praha",
