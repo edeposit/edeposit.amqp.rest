@@ -74,9 +74,11 @@ def reactToAMQPMessage(message, send_back):
         if cache_db.is_empty():
             return
 
+        # this will pop the RequestInfo from `cache_db` if success
         with cache_db.pop_manager() as cached_request:
             fp = cached_request.get_file_obj()
 
+            # convert the file to base64 memory-efficient way
             with tempfile.TemporaryFile() as f:
                 base64.encode(fp, f)
 
@@ -99,5 +101,6 @@ def reactToAMQPMessage(message, send_back):
             book_name=message.book_name,
             pub_url=message.pub_url,
         )
+        return
 
     raise ValueError("'%s' is unknown type of request!" % str(type(message)))
