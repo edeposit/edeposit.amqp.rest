@@ -102,16 +102,27 @@ def _assert_constraints():
             globals()[var_name]
         )
 
-    def _assert_exists_and_perm(path, perm):
-        assert os.path.exists(path) and os.access(path, perm)
+    def _assert_exists_and_perm(var, path, perm):
+        msg = "Can't access the required `%s` " % path
+        msg += "file set in configuration (%s)!" % var
+
+        assert os.path.exists(path) and os.access(path, perm), msg
 
     _assert_var_is_set("WEB_CACHE")
     _assert_var_is_set("ZEO_CLIENT_CONF_FILE")
     _assert_var_is_set("ZEO_SERVER_CONF_FILE")
 
-    _assert_exists_and_perm(WEB_CACHE, os.W_OK)
-    _assert_exists_and_perm(ZEO_CLIENT_CONF_FILE, os.R_OK)
-    _assert_exists_and_perm(ZEO_SERVER_CONF_FILE, os.R_OK)
+    _assert_exists_and_perm("WEB_CACHE", WEB_CACHE, os.W_OK)
+    _assert_exists_and_perm(
+        "ZEO_CLIENT_CONF_FILE",
+        ZEO_CLIENT_CONF_FILE,
+        os.R_OK
+    )
+    _assert_exists_and_perm(
+        "ZEO_SERVER_CONF_FILE",
+        ZEO_SERVER_CONF_FILE,
+        os.R_OK
+    )
 
 
 def _read_from_paths():
@@ -119,31 +130,29 @@ def _read_from_paths():
     Try to read data from configuration paths ($HOME/_SETTINGS_PATH,
     /etc/_SETTINGS_PATH).
     """
-    home = os.environ.get("HOME", "/")
+    home = os.environ.get("HOME", "")
     home_path = os.path.join(home, _SETTINGS_PATH)
     etc_path = os.path.join("/etc", _SETTINGS_PATH)
+    env_path = os.environ.get("SETTINGS_PATH", "")
 
     read_path = None
-    if home and os.path.exists(home_path):
+    if env_path and os.path.exists(env_path):
+        read_path = env_path
+    elif home and os.path.exists(home_path):
         read_path = home_path
     elif os.path.exists(etc_path):
         read_path = etc_path
 
     if not read_path:
-        return
+        return "{}"
 
     with open(read_path) as f:
         return f.read()
 
 
 def _apply_settings():
-    json_settings = _read_from_paths()
-
-    if "JSON_SETTINGS" in os.environ:
-        json_settings = os.environ["JSON_SETTINGS"]
-
     _substitute_globals(
-        json.loads(json_settings)
+        json.loads(_read_from_paths())
     )
 
     _assert_constraints()
