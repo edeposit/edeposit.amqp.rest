@@ -15,7 +15,7 @@ from rest.database.user_handler import create_hash
 
 
 # Fixtures ====================================================================
-@pytest.fixture
+@pytest.fixture(scope="session", autouse=True)
 def user_db():
     return UserHandler(
         conf_path=tmp_context_name("zeo_client.conf"),
