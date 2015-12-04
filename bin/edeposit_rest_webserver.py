@@ -65,7 +65,6 @@ def check_auth(username, password):
     request.environ["username"] = username
     request.environ["password"] = password
 
-    return True  # TODO: remove
     return USER_DB.is_valid_user(
         username=username,
         password=password

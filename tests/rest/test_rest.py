@@ -12,6 +12,14 @@ import requests
 import dhtmlparser
 from requests.auth import HTTPBasicAuth
 
+from ..database.test_user_handler import user_db
+from ..database.test_user_handler import create_hash
+
+
+# Variables ===================================================================
+USERNAME = "user"
+PASSWORD = "pass"
+
 
 # Fixtures ====================================================================
 # Functions ===================================================================
@@ -38,15 +46,19 @@ def check_errors(response):
 
 def send_request(url, data):
     return requests.post(
-        urlparse.urljoin(url, "submit"),  # web_api_url is gl. fixt.
+        urlparse.urljoin(url, "submit"),
         data={"json_metadata": json.dumps(data)},
-        auth=HTTPBasicAuth('user', 'pass'),
+        auth=HTTPBasicAuth(USERNAME, PASSWORD),
         files={'file': "Whatever"},
         timeout=5,
     )
 
 
 # Tests =======================================================================
+def test_add_user_for_tests(user_db):
+    user_db.add_user(USERNAME, create_hash(PASSWORD))
+
+
 def test_submit_epub_minimal(bottle_server, web_api_url):
     resp = send_request(web_api_url, {
         "nazev": "Název",
@@ -191,3 +203,16 @@ def test_submit_epub_optionals_riv_error(web_api_url):
 
     with pytest.raises(ValueError):
         check_errors(resp)
+
+
+def test_amqp_chain(web_api_url, user_db):
+    global USERNAME
+    global PASSWORD
+
+    USERNAME = "foo"
+    PASSWORD = "bar"
+
+    # add new user for following test
+    user_db.add_user(USERNAME, create_hash(PASSWORD))
+
+
