@@ -4,6 +4,8 @@
 # Interpreter version: python 2.7
 #
 # Imports =====================================================================
+from __future__ import unicode_literals
+
 import json
 import urlparse
 
@@ -12,8 +14,8 @@ import requests
 import dhtmlparser
 from requests.auth import HTTPBasicAuth
 
-from ..database.test_user_handler import user_db
-from ..database.test_user_handler import create_hash
+from rest.database import UserHandler
+from rest.database.user_handler import create_hash
 
 
 # Variables ===================================================================
@@ -22,6 +24,11 @@ PASSWORD = "pass"
 
 
 # Fixtures ====================================================================
+@pytest.fixture
+def user_db(client_conf_path):
+    return UserHandler(conf_path=client_conf_path)
+
+
 # Functions ===================================================================
 def check_errors(response):
     try:
@@ -55,8 +62,9 @@ def send_request(url, data):
 
 
 # Tests =======================================================================
-def test_add_user_for_tests(user_db):
+def test_create_user_for_rest(user_db, zeo, client_conf_path):
     user_db.add_user(USERNAME, create_hash(PASSWORD))
+    assert user_db.is_valid_user(USERNAME, PASSWORD)
 
 
 def test_submit_epub_minimal(bottle_server, web_api_url):
@@ -209,10 +217,19 @@ def test_amqp_chain(web_api_url, user_db):
     global USERNAME
     global PASSWORD
 
-    USERNAME = "foo"
+    USERNAME = "azgabash"
     PASSWORD = "bar"
 
     # add new user for following test
     user_db.add_user(USERNAME, create_hash(PASSWORD))
 
+    resp = send_request(web_api_url, {
+        "nazev": "Název",
+        "poradi_vydani": "3",
+        "misto_vydani": "Praha",
+        "rok_vydani": "1989",
+        "zpracovatel_zaznamu": "/me",
+        "nazev_souboru": "story_of_mighty_azgabash.pdf",
+    })
 
+    assert check_errors(resp)
