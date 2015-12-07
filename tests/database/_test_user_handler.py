@@ -8,24 +8,19 @@ from itertools import permutations
 
 import pytest
 
-from zeo_connector_defaults import tmp_context_name
-
 from rest.database import UserHandler
 from rest.database.user_handler import create_hash
 
 
 # Fixtures ====================================================================
-@pytest.fixture(scope="session", autouse=True)
-def user_db():
-    return UserHandler(
-        conf_path=tmp_context_name("zeo_client.conf"),
-        project_key="key",
-    )
+@pytest.fixture
+def user_db(client_conf_path):
+    return UserHandler(conf_path=client_conf_path)
 
 
 # Tests =======================================================================
-def test_user_handling(zeo):
-    db1 = user_db()
+def test_user_handling(zeo, client_conf_path):
+    db1 = user_db(client_conf_path)
 
     db1.add_user("foo", create_hash("bar"))
 
@@ -33,7 +28,7 @@ def test_user_handling(zeo):
     assert not db1.is_valid_user("foo", "baz")
     assert not db1.is_valid_user("f", "bar")
 
-    db2 = user_db()
+    db2 = user_db(client_conf_path)
 
     assert db2.is_valid_user("foo", "bar")
     assert not db2.is_valid_user("foo", "baz")
@@ -52,19 +47,16 @@ def test_user_handling(zeo):
 
 def test_multiple_users_creation(user_db):
     for username in permutations("abcd", 4):
+        username = "".join(username)
         user_db.add_user(username, create_hash(username * 2))
 
 
 def test_multiple_users_querying(user_db):
     for username in permutations("abcd", 4):
+        username = "".join(username)
         assert user_db.is_valid_user(username, username * 2)
 
 
 def test_is_registered(user_db):
     assert user_db.is_registered("foo")
     assert not user_db.is_registered("bar")
-
-
-def test_is_valid_user_hashed(user_db):
-    assert user_db.is_valid_user_hashed("foo", create_hash("bar"))
-    assert not user_db.is_valid_user_hashed("foo", "bar")
