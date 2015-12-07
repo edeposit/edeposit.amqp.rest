@@ -54,16 +54,19 @@ TEMPLATE_PATH = join(
     dirname(__file__), "../src/edeposit/amqp/rest/html_templates"
 )
 V1_PATH = "/api/v1/"  # TODO: api_v1
-USER_DB = UserHandler(
-    conf_path=settings.ZEO_CLIENT_CONF_FILE,
-    project_key=settings.PROJECT_KEY,
-)
+USER_DB = None
 
 
 # Functions & classes =========================================================
 def check_auth(username, password):
     request.environ["username"] = username
     request.environ["password"] = password
+
+    # for some strange reason, this has to be initialized in the function, not
+    # at the beginning of the file
+    if not USER_DB:
+        global USER_DB
+        USER_DB = UserHandler(conf_path=settings.ZEO_CLIENT_CONF_FILE)
 
     return USER_DB.is_valid_user(
         username=username,
