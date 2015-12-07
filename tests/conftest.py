@@ -4,13 +4,15 @@
 # Interpreter version: python 2.7
 #
 # Imports =====================================================================
+from __future__ import unicode_literals
+
 import os
 import json
 import time
 import random
 import tempfile
-import threading
 import subprocess
+import multiprocessing
 
 import pytest
 import requests
@@ -86,7 +88,7 @@ def server_conf_path(zeo):
     return tmp_context_name("zeo.conf")
 
 
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 def bottle_server(request, zeo, client_conf_path, server_conf_path):
     alt_conf_path = _create_alt_settings(
         client_path=client_conf_path,
@@ -94,28 +96,40 @@ def bottle_server(request, zeo, client_conf_path, server_conf_path):
     )
 
     # run the bottle REST server
-    def run_bottle():
-        command_path = os.path.join(
-            os.path.dirname(__file__),
-            "../bin/edeposit_rest_webserver.py"
-        )
+    class BottleProcess(multiprocessing.Process):
+        def __init__(self, alt_conf_path):
+            multiprocessing.Process.__init__(self)
+            self._server_handler = None
+            self.alt_conf_path = alt_conf_path
 
-        assert os.path.exists(command_path)
+            self.exit = multiprocessing.Event()
 
-        # replace settings with mocked file
-        my_env = os.environ.copy()
-        my_env["SETTINGS_PATH"] = alt_conf_path
+        def run(self):
+            command_path = os.path.join(
+                os.path.dirname(__file__),
+                "../bin/edeposit_rest_webserver.py"
+            )
 
-        global _SERVER_HANDLER
-        _SERVER_HANDLER = subprocess.Popen(command_path, env=my_env)
+            assert os.path.exists(command_path)
 
-    serv = threading.Thread(target=run_bottle)
-    serv.setDaemon(True)
+            # replace settings with mocked file
+            my_env = os.environ.copy()
+            my_env["SETTINGS_PATH"] = alt_conf_path
+
+            self._server_handler = subprocess.Popen(command_path, env=my_env)
+
+        def shutdown(self):
+            if self._server_handler:
+                self._server_handler.terminate()
+
+            self.exit.set()
+
+    serv = BottleProcess(alt_conf_path)
     serv.start()
 
     # add finalizer which shutdowns the server and remove temporary file
     def shutdown_server():
-        _SERVER_HANDLER.terminate()
+        serv.shutdown()
         os.unlink(alt_conf_path)
 
     request.addfinalizer(shutdown_server)
