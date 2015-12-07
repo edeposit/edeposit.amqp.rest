@@ -4,6 +4,7 @@
 # Interpreter version: python 2.7
 #
 # Imports =====================================================================
+import bcrypt
 import transaction
 
 from zeo_connector import transaction_manager
@@ -15,7 +16,7 @@ from ..settings import ZEO_CLIENT_CONF_FILE
 
 # Functions & classes =========================================================
 def create_hash(password):
-    return str(hash(password))  # TODO: change to cryptographic hashing function
+    return bcrypt.hashpw(str(password), bcrypt.gensalt())
 
 
 class UserHandler(DatabaseHandler):
@@ -68,13 +69,13 @@ class UserHandler(DatabaseHandler):
         """
         del self.users[username]
 
-    def is_valid_user_hashed(self, username, hashed_password):
+    def is_valid_user(self, username, password):
         """
         Check whether `username` and user's `hashed_password` is valid.
 
         Args:
             username (str): Username.
-            hashed_password (str): Cleantext version of the password.
+            password (str): Cleantext version of the password.
 
         Returns:
             bool: True if valid.
@@ -85,25 +86,9 @@ class UserHandler(DatabaseHandler):
         if stored_pass_hash is None:
             return False
 
-        return hashed_password == stored_pass_hash
+        hashed = bcrypt.hashpw(str(password), stored_pass_hash)
 
-    def is_valid_user(self, username, password, hashing_mechanism=create_hash):
-        """
-        Check whether the username:password pair is valid or not.
-
-        Args:
-            username (str): Username.
-            password (str): Cleantext version of the password.
-            hashing_mechanism (fn ref): Hashing function. Default
-                :func:`create_hash`.
-
-        Returns:
-            bool: True if valid.
-        """
-        return self.is_valid_user_hashed(
-            username=username,
-            hashed_password=hashing_mechanism(password)
-        )
+        return hashed == stored_pass_hash
 
     @transaction_manager
     def is_registered(self, username):
