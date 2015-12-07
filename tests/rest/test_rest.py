@@ -15,6 +15,8 @@ import dhtmlparser
 from requests.auth import HTTPBasicAuth
 
 from rest.database import UserHandler
+from rest.database import CacheHandler
+from rest.database import StatusHandler
 from rest.database.user_handler import create_hash
 
 
@@ -27,6 +29,17 @@ PASSWORD = "pass"
 @pytest.fixture
 def user_db(client_conf_path):
     return UserHandler(conf_path=client_conf_path)
+
+
+@pytest.fixture
+def cache_db(client_conf_path):
+    return CacheHandler(conf_path=client_conf_path)
+
+
+@pytest.fixture
+def status_db(client_conf_path):
+    return StatusHandler(conf_path=client_conf_path)
+
 
 
 # Functions ===================================================================
@@ -213,7 +226,7 @@ def test_submit_epub_optionals_riv_error(web_api_url):
         check_errors(resp)
 
 
-def test_amqp_chain(web_api_url, user_db):
+def test_amqp_chain(web_api_url, user_db, cache_db, status_db):
     global USERNAME
     global PASSWORD
 
@@ -223,13 +236,28 @@ def test_amqp_chain(web_api_url, user_db):
     # add new user for following test
     user_db.add_user(USERNAME, create_hash(PASSWORD))
 
-    resp = send_request(web_api_url, {
+    # clean up cache_db
+    while cache_db.pop():
+        pass
+    assert cache_db.is_empty()
+
+    with pytest.raises(IndexError):
+        status_db.query_statuses(USERNAME)
+
+    dataset = {
         "nazev": "Název",
         "poradi_vydani": "3",
         "misto_vydani": "Praha",
         "rok_vydani": "1989",
         "zpracovatel_zaznamu": "/me",
         "nazev_souboru": "story_of_mighty_azgabash.pdf",
-    })
+    }
+    resp = send_request(web_api_url, dataset)
 
     assert check_errors(resp)
+
+    assert not cache_db.is_empty()
+    assert status_db.query_statuses(USERNAME)[0].book_name == dataset["nazev"]
+    assert len(status_db.query_statuses(USERNAME)[0].get_messages()) == 1
+
+    # pridat statusy pres amqp
