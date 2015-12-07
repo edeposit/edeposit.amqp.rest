@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 
 import sys
 import json
+import time
 import uuid
 import traceback
 from os.path import join
@@ -194,6 +195,12 @@ def submit_publication(json_metadata):
     status_db.register_status_tracking(
         username=username,
         rest_id=rest_id
+    )
+    status_db.save_status_update(
+        rest_id=rest_id,
+        book_name=metadata["title"],
+        timestamp=time.time(),
+        message="Ohlaseno pres REST.",
     )
 
     return rest_id
