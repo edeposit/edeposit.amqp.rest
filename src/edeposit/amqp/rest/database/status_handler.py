@@ -391,7 +391,7 @@ class StatusHandler(DatabaseHandler):
             username (str): Name of the user. If the user is not registered,
                 then it is ignored.
         """
-        ids = self.username_to_ids.get(username, None)
+        ids = list(self.username_to_ids.get(username, None))
 
         if ids is None:
             return
