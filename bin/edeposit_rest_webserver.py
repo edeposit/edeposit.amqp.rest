@@ -65,8 +65,8 @@ def check_auth(username, password):
 
     # for some strange reason, this has to be initialized in the function, not
     # at the beginning of the file
+    global USER_DB
     if not USER_DB:
-        global USER_DB
         USER_DB = UserHandler(conf_path=settings.ZEO_CLIENT_CONF_FILE)
 
     return USER_DB.is_valid_user(
