@@ -145,6 +145,17 @@ def test_status_handler_remove_status_info(status_handler):
     assert ALT_REST_ID not in status_handler.query_statuses(USERNAME)
 
 
+def test_remove_user(status_handler):
+    status_handler.register_status_tracking(USERNAME, ALT_REST_ID)
+
+    assert status_handler.query_statuses(USERNAME)
+
+    status_handler.remove_user(USERNAME)
+
+    with pytest.raises(IndexError):
+        status_handler.query_statuses(REST_ID)
+
+
 def test_status_handler_trigger_garbage_collection(status_handler):
     status_handler.trigger_garbage_collection(interval=0)
 
