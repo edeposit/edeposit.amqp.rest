@@ -28,7 +28,7 @@ class StatusUpdate(namedtuple("StatusUpdate", ["rest_id",
     """
 
 
-class CacheTick(namedtuple("RemoveLogin", [])):
+class CacheTick(namedtuple("CacheTick", [])):
     """
     Tick for the cached uploader, telling it that it is OK to upload one more
     request, if present.
