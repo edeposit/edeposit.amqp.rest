@@ -259,6 +259,15 @@ class StatusHandler(DatabaseHandler):
             rest_id (str): Unique identificator of given REST request.
             username (str, default None): Name of the user. If not set, the
                 username will not be checked.
+
+        Raises:
+            IndexError: If the user wasn't registered to receive status
+                updates.
+            AccessDeniedException: If the optional parameter `username` doesn't
+                fit to given `rest_id`.
+
+        Returns:
+            obj: :class:`StatusInfo` for given `rest_id`.
         """
         status_info_obj = self.status_db.get(rest_id, None)
         db_username = self.id_to_username.get(rest_id, None)
@@ -287,6 +296,9 @@ class StatusHandler(DatabaseHandler):
 
         Args:
             username (str): Selected username.
+
+        Raises:
+            IndexError: If username was not found in database.
 
         Returns:
             list: List of :class:`StatusInfo` objects sorted by creation time.
@@ -322,6 +334,10 @@ class StatusHandler(DatabaseHandler):
             rest_id (str): Unique identificator of given REST request.
             username (str, default None): Name of the user. If not set, the
                 username will not be checked.
+
+        Raises:
+            AccessDeniedException: In case that optional `username` parameter
+                doesn't match with given `rest_id`.
         """
         session = random.randint(0, 100000)
         self.log("Request to remove StatusInfo(%s)." % repr(rest_id), session)
@@ -368,6 +384,13 @@ class StatusHandler(DatabaseHandler):
 
     @transaction_manager
     def remove_user(self, username):
+        """
+        Remove tracking of the `username`.
+
+        Args:
+            username (str): Name of the user. If the user is not registered,
+                then it is ignored.
+        """
         ids = self.username_to_ids.get(username, None)
 
         if ids is None:
