@@ -12,6 +12,7 @@ from structures import SaveLogin
 from structures import RemoveLogin
 from structures import StatusUpdate
 from structures import UploadRequest
+from structures import AfterDBCleanupRequest
 
 import settings
 from database import UserHandler as _UserHandler
@@ -72,6 +73,9 @@ def reactToAMQPMessage(message, send_back):
         return user_db.remove_user(username=message.username)
 
     elif _instanceof(message, CacheTick):
+        if user_db.is_empty():
+            return AfterDBCleanupRequest()
+
         if cache_db.is_empty():
             return
 
