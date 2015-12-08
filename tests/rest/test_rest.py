@@ -9,11 +9,13 @@ from __future__ import unicode_literals
 import json
 import urlparse
 
+import os
 import pytest
 import requests
 import dhtmlparser
 from requests.auth import HTTPBasicAuth
 
+import rest
 from rest.database import UserHandler
 from rest.database import CacheHandler
 from rest.database import StatusHandler
@@ -226,17 +228,29 @@ def test_submit_epub_optionals_riv_error(web_api_url):
         check_errors(resp)
 
 
-def test_amqp_chain(web_api_url, user_db, cache_db, status_db):
+def test_amqp_chain(web_api_url, user_db, cache_db, status_db, alt_conf_path):
     global USERNAME
     global PASSWORD
 
     USERNAME = "azgabash"
     PASSWORD = "bar"
 
-    # add new user for following test
-    user_db.add_user(USERNAME, create_hash(PASSWORD))
+    # set alternative path for settings file
+    os.environ["SETTINGS_PATH"] = alt_conf_path
 
-    # clean up cache_db
+    # this has to be here, because of env for settings
+    reload(rest.settings)
+
+    # add new user for following test
+    rest.reactToAMQPMessage(
+        rest.SaveLogin(
+            username=USERNAME,
+            password_hash=create_hash(PASSWORD),
+        ),
+        lambda x: x
+    )
+
+    # clean up cache_db from previous requests
     while cache_db.pop():
         pass
     assert cache_db.is_empty()
