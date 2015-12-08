@@ -66,33 +66,35 @@ def reactToAMQPMessage(message, send_back):
             username=message.username,
             pw_hash=message.password_hash,
         )
+
     elif _instanceof(message, RemoveLogin):
-        return user_db.remove_user(
-            username=message.username
-        )
+        status_db.remove_user(username=message.username)
+        return user_db.remove_user(username=message.username)
+
     elif _instanceof(message, CacheTick):
         if cache_db.is_empty():
             return
 
         # this will pop the RequestInfo from `cache_db` if success
         with cache_db.pop_manager() as cached_request:
-            fp = cached_request.get_file_obj()
+            cached_file = cached_request.get_file_obj()
 
             # convert the file to base64 memory-efficient way
-            with tempfile.TemporaryFile() as f:
-                base64.encode(fp, f)
+            with tempfile.TemporaryFile() as tmp_file:
+                base64.encode(cached_file, tmp_file)
 
-                f.seek(0)
+                tmp_file.seek(0)
                 req = UploadRequest(
                     username=cached_request.username,
                     rest_id=cached_request.rest_id,
-                    b64_data=f.read(),
+                    b64_data=tmp_file.read(),
                     metadata=cached_request.metadata,
                 )
 
-            fp.close()
+            cached_file.close()
 
         return req
+
     elif _instanceof(message, StatusUpdate):
         status_db.save_status_update(
             rest_id=message.rest_id,
