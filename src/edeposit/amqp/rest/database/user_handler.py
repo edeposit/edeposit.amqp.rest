@@ -16,6 +16,15 @@ from ..settings import ZEO_CLIENT_CONF_FILE
 
 # Functions & classes =========================================================
 def create_hash(password):
+    """
+    Compute the hash using bcrypt.
+
+    Args:
+        password (str): Password which will be hashed.
+
+    Returns:
+        str: Hashed password.
+    """
     return bcrypt.hashpw(str(password), bcrypt.gensalt())
 
 
