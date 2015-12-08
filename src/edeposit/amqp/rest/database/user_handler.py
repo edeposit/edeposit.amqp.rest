@@ -102,3 +102,13 @@ class UserHandler(DatabaseHandler):
             bool: True if the user is registered.
         """
         return username in self.users
+
+    @transaction_manager
+    def is_empty(self):
+        """
+        Is the UserHandler database empty?
+
+        Returns:
+            bool: True if it is.
+        """
+        return not list(self.users.keys())
