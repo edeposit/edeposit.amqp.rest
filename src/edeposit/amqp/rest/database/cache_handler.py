@@ -74,6 +74,16 @@ class UploadRequest(Persistent):
         """
         return BalancedDiscStorage(self.cache_dir)
 
+    def get_file_path(self):
+        """
+        Return absolute path to the file.
+
+        Return:
+            str: Path.
+        """
+        return self._bds().file_path_from_hash(self.bds_id)
+
+    @transaction_manager
     def get_file_obj(self):
         """
         Get back reference to opened file object in BalancedDiscStorage.
@@ -81,11 +91,7 @@ class UploadRequest(Persistent):
         Returns:
             file: Opened file object.
         """
-        with transaction.manager:
-            return open(
-                self._bds().file_path_from_hash(self.bds_id),
-                "rb"
-            )
+        return open(self.get_file_path(), "rb")
 
     def remove_file(self):
         """
@@ -205,6 +211,10 @@ class CacheHandler(DatabaseHandler):
         """
         Remove the oldest item from the queue and return it.
 
+        Warning:
+            YOU HAVE TO CALL :class:`UploadRequest` IN ORDER TO REMOVE THE FILE
+            FROM DISC!
+
         Returns:
             obj: :class:`UploadRequest` instance.
         """
@@ -226,6 +236,7 @@ class CacheHandler(DatabaseHandler):
         yield oldest
 
         with transaction.manager:
+            self.cache[oldest.bds_id].remove_file()
             del self.cache[oldest.bds_id]
 
         self.zeo.pack()
