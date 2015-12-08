@@ -89,11 +89,16 @@ def server_conf_path(zeo):
 
 
 @pytest.fixture(scope="session", autouse=True)
-def bottle_server(request, zeo, client_conf_path, server_conf_path):
-    alt_conf_path = _create_alt_settings(
+def alt_conf_path(client_conf_path, server_conf_path):
+    return _create_alt_settings(
         client_path=client_conf_path,
         server_path=server_conf_path,
     )
+
+
+@pytest.fixture(scope="session", autouse=True)
+def bottle_server(request, zeo, alt_conf_path):
+    os.environ["SETTINGS_PATH"] = alt_conf_path
 
     # run the bottle REST server
     class BottleProcess(multiprocessing.Process):
@@ -113,10 +118,12 @@ def bottle_server(request, zeo, client_conf_path, server_conf_path):
             assert os.path.exists(command_path)
 
             # replace settings with mocked file
-            my_env = os.environ.copy()
-            my_env["SETTINGS_PATH"] = alt_conf_path
+            os.environ["SETTINGS_PATH"] = alt_conf_path
 
-            self._server_handler = subprocess.Popen(command_path, env=my_env)
+            self._server_handler = subprocess.Popen(
+                command_path,
+                env=os.environ,
+            )
 
         def shutdown(self):
             if self._server_handler:
