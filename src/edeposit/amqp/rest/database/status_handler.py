@@ -366,6 +366,16 @@ class StatusHandler(DatabaseHandler):
 
         self.log("StatusInfo(%s) successfully removed." % rest_id, session)
 
+    @transaction_manager
+    def remove_user(self, username):
+        ids = self.username_to_ids.get(username, None)
+
+        if ids is None:
+            return
+
+        for rest_id in ids:
+            self.remove_status_info(rest_id)
+
     def trigger_garbage_collection(self, interval=YEAR/2):
         """
         Do a garbage collection run and remove all :class:`StatusInfo` objects
