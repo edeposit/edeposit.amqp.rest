@@ -10,7 +10,9 @@ import json
 import urlparse
 
 import os
+import time
 import pytest
+import os.path
 import requests
 import dhtmlparser
 from requests.auth import HTTPBasicAuth
@@ -251,13 +253,17 @@ def test_amqp_chain(web_api_url, user_db, cache_db, status_db, alt_conf_path):
     )
 
     # clean up cache_db from previous requests
-    while cache_db.pop():
-        pass
+    while not cache_db.is_empty():
+        el = cache_db.pop()
+        el.remove_file()
+
     assert cache_db.is_empty()
 
+    # make sure that also status_db is empty
     with pytest.raises(IndexError):
         status_db.query_statuses(USERNAME)
 
+    # send new request
     dataset = {
         "nazev": "Název",
         "poradi_vydani": "3",
@@ -270,8 +276,57 @@ def test_amqp_chain(web_api_url, user_db, cache_db, status_db, alt_conf_path):
 
     assert check_errors(resp)
 
+    # check the state of the database
     assert not cache_db.is_empty()
-    assert status_db.query_statuses(USERNAME)[0].book_name == dataset["nazev"]
-    assert len(status_db.query_statuses(USERNAME)[0].get_messages()) == 1
+    status_info = status_db.query_statuses(USERNAME)[0]
+    assert status_info.book_name == dataset["nazev"]
+    assert status_info.pub_url is None
+    assert len(status_info.get_messages()) == 1
 
-    # pridat statusy pres amqp
+    # try to save status update message
+    update_msg = rest.StatusUpdate(
+        rest_id=status_info.rest_id,
+        timestamp=time.time(),
+        message="Update message.",
+        pub_url="http://somepuburl",
+        book_name=None,
+    )
+    rest.reactToAMQPMessage(update_msg, lambda x: x)
+
+    # test that new statusinfo update was successfully saved to DB
+    assert not cache_db.is_empty()
+    status_info = status_db.query_statuses(USERNAME)[0]
+    assert status_info.book_name == dataset["nazev"]
+    assert status_info.pub_url == update_msg.pub_url
+    assert len(status_info.get_messages()) == 2
+    assert status_info.get_messages()[1].message == update_msg.message
+    assert status_info.get_messages()[1].timestamp == update_msg.timestamp
+
+    file_path = cache_db.top().get_file_path()
+    assert os.path.exists(file_path)
+
+    # pick item from the cache
+    response = rest.reactToAMQPMessage(rest.CacheTick(), lambda x: x)
+
+    # assert that only the cache was changed
+    assert cache_db.is_empty()
+    status_info = status_db.query_statuses(USERNAME)[0]
+    assert status_info.book_name == dataset["nazev"]
+    assert status_info.pub_url == update_msg.pub_url
+    assert len(status_info.get_messages()) == 2
+    assert status_info.get_messages()[1].message == update_msg.message
+    assert status_info.get_messages()[1].timestamp == update_msg.timestamp
+
+    assert response.username == USERNAME
+    assert response.rest_id == status_info.rest_id
+    assert response.b64_data
+    assert response.metadata["title"] == dataset["nazev"]
+
+    # remove user from the user_db
+    rest.reactToAMQPMessage(rest.RemoveLogin(USERNAME), lambda x: x)
+
+    # make sure that also status_db and cache_db is empty
+    assert cache_db.is_empty()
+    with pytest.raises(IndexError):
+        status_db.query_statuses(USERNAME)
+    assert not os.path.exists(file_path)
