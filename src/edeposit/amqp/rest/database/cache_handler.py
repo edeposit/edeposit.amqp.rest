@@ -220,11 +220,14 @@ class CacheHandler(DatabaseHandler):
 
     @contextmanager
     def pop_manager(self):
-        oldest = min(self.cache.values(), key=lambda x: x.created)
+        with transaction.manager:
+            oldest = min(self.cache.values(), key=lambda x: x.created)
 
         yield oldest
 
-        del self.cache[oldest.bds_id]
+        with transaction.manager:
+            del self.cache[oldest.bds_id]
+
         self.zeo.pack()
 
     @transaction_manager
