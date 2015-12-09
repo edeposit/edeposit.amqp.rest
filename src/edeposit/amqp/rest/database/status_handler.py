@@ -6,7 +6,6 @@
 # Imports =====================================================================
 import time
 import random
-from collections import OrderedDict
 from functools import total_ordering
 
 import transaction
@@ -230,6 +229,11 @@ class StatusHandler(DatabaseHandler):
         """
         Save new status `message` to given `rest_id`.
 
+        Warning:
+            If the tracking for given user wasn't registered using
+            :meth:`.register_status_tracking`, the status updates for this
+            user / rest_id will be ignored!
+
         Args:
             rest_id (str): Unique identificator of given REST request.
             message (str): Content of the status update.
@@ -386,6 +390,8 @@ class StatusHandler(DatabaseHandler):
     def remove_user(self, username):
         """
         Remove tracking of the `username`.
+
+        If the `username` is not registered, than nothing happens.
 
         Args:
             username (str): Name of the user. If the user is not registered,
