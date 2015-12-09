@@ -171,6 +171,10 @@ class CacheHandler(DatabaseHandler):
         Args:
             upload_request (obj): :class:`UploadRequest` instance.
 
+        Raises:
+            AssertionError: In case that `upload_request` is not
+                :class:`UploadRequest` instance.
+
         Returns:
             obj: :class:`UploadRequest` instance.
         """
@@ -196,6 +200,9 @@ class CacheHandler(DatabaseHandler):
         """
         Get the oldest item from the queue, but leave the item at its position.
 
+        Raises:
+            ValueError: In case that there is no request cached.
+
         Returns:
             obj: :class:`UploadRequest` instance.
         """
@@ -212,8 +219,8 @@ class CacheHandler(DatabaseHandler):
         Remove the oldest item from the queue and return it.
 
         Warning:
-            YOU HAVE TO CALL :class:`UploadRequest` IN ORDER TO REMOVE THE FILE
-            FROM DISC!
+            YOU HAVE TO CALL :meth:`UploadRequest.remove_file` IN ORDER TO
+            REMOVE THE FILE FROM DISC!
 
         Returns:
             obj: :class:`UploadRequest` instance.
@@ -230,6 +237,18 @@ class CacheHandler(DatabaseHandler):
 
     @contextmanager
     def pop_manager(self):
+        """
+        Context manager which automatically removes the object and also cleans
+        up the file from UploadRequest.
+
+        Example::
+
+            with cache_db.pop_manager() as upload_request:
+                # do something
+
+        Yeilds:
+            obj: :class:`UploadRequest`
+        """
         with transaction.manager:
             oldest = min(self.cache.values(), key=lambda x: x.created)
 
