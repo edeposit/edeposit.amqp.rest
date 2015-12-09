@@ -408,10 +408,10 @@ class StatusHandler(DatabaseHandler):
     def trigger_garbage_collection(self, interval=YEAR/2):
         """
         Do a garbage collection run and remove all :class:`StatusInfo` objects
-        which are stored more than `interval`.
+        which are stored longer than `interval`.
 
         Args:
-            interval (int/float): Inteval in seconds.
+            interval (int/float): Inteval in seconds. Default YEAR/2.
         """
         with transaction.manager:
             garbage_rest_ids = [
