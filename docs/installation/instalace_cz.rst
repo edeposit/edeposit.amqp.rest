@@ -1,3 +1,6 @@
+Proces instalace (cz)
+=====================
+
 Nainstalovat balík přes PIP:
 
     sudo pip install edeposit.amqp.rest
