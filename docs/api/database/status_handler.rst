@@ -1,5 +1,5 @@
-rest.database.status_handler module
-===================================
+status_handler
+==============
 
 .. automodule:: rest.database.status_handler
     :members:

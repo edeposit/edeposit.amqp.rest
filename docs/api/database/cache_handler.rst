@@ -1,5 +1,5 @@
-rest.database.cache_handler module
-==================================
+cache_handler
+=============
 
 .. automodule:: rest.database.cache_handler
     :members:

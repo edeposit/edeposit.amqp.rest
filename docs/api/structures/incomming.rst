@@ -1,5 +1,5 @@
-rest.structures.incomming module
-================================
+incomming
+=========
 
 .. automodule:: rest.structures.incomming
     :members:

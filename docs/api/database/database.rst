@@ -1,5 +1,5 @@
-rest.database package
-=====================
+database package
+================
 
 .. automodule:: rest.database
     :members:
@@ -11,7 +11,7 @@ Submodules
 
 .. toctree::
 
-   rest.database.cache_handler
-   rest.database.status_handler
-   rest.database.user_handler
+   user_handler
+   cache_handler
+   status_handler
 

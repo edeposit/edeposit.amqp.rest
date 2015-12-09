@@ -1,5 +1,5 @@
-rest.database.user_handler module
-=================================
+user_handler
+============
 
 .. automodule:: rest.database.user_handler
     :members:

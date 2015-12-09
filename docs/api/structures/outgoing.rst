@@ -1,5 +1,5 @@
-rest.structures.outgoing module
-===============================
+outgoing
+========
 
 .. automodule:: rest.structures.outgoing
     :members:

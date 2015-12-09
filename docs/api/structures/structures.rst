@@ -1,5 +1,5 @@
-rest.structures package
-=======================
+structures package
+==================
 
 .. automodule:: rest.structures
     :members:
@@ -11,6 +11,6 @@ Submodules
 
 .. toctree::
 
-   rest.structures.incomming
-   rest.structures.outgoing
+   incomming
+   outgoing
 

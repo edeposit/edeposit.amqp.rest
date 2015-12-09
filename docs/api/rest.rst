@@ -11,13 +11,14 @@ Subpackages
 
 .. toctree::
 
-    rest.database
-    rest.structures
+    database/database
 
-Submodules
-----------
 
 .. toctree::
 
-   rest.settings
+    structures/structures
+
+.. toctree::
+
+    settings
 
