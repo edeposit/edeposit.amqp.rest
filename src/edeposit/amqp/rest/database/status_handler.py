@@ -127,7 +127,7 @@ class StatusInfo(Persistent):
         Return sorted list of :attr:`.messages`.
 
         Returns:
-            list: :class`.StatusMessage` instances.
+            list: :class:`.StatusMessage` instances.
         """
         return sorted(self.messages, key=lambda x: x.timestamp)
 
