@@ -43,8 +43,8 @@ setup(
     namespace_packages=['edeposit', 'edeposit.amqp'],
 
     scripts=[
-        # 'bin/edeposit_storage_runzeo.sh',
-        # 'bin/edeposit_storage_server.py',
+        'bin/edeposit_rest_runzeo.py',
+        'bin/edeposit_rest_webserver.py',
     ],
 
     zip_safe=False,
@@ -56,7 +56,6 @@ setup(
     extras_require={
         "test": [
             "pytest",
-            # "fake-factory"
         ],
         "docs": [
             "sphinx",
