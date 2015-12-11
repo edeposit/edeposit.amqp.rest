@@ -4,6 +4,6 @@ bottle
 docutils
 bottle-rest
 zeo-connector>=0.4.4
-edeposit.amqp.models
+edeposit.amqp.models>=0.2.3
 BalancedDiscStorage>=1.0.3
 pydhtmlparser>=2.1.5
