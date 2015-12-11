@@ -22,19 +22,26 @@ from bottle import abort
 from bottle import request
 from bottle import auth_basic
 from bottle import HTTPResponse
-from bottle import SimpleTemplate
 
 from bottle_rest import form_to_params
 
 import dhtmlparser
 from docutils.core import publish_parts
 
-from models import SchemaError
-from models import EpublicationValidator
-from models import czech_to_edeposit_dict
-from models.riv import RIV_CATEGORIES
-from models.libraries import LIBRARY_MAP
-from models.libraries import DEFAULT_LIBRARY
+try:
+    from models import SchemaError
+    from models import EpublicationValidator
+    from models import czech_to_edeposit_dict
+    from models.riv import RIV_CATEGORIES
+    from models.libraries import LIBRARY_MAP
+    from models.libraries import DEFAULT_LIBRARY
+except ImportError:
+    from edeposit.amqp.models import SchemaError
+    from edeposit.amqp.models import EpublicationValidator
+    from edeposit.amqp.models import czech_to_edeposit_dict
+    from edeposit.amqp.models.riv import RIV_CATEGORIES
+    from edeposit.amqp.models.libraries import LIBRARY_MAP
+    from edeposit.amqp.models.libraries import DEFAULT_LIBRARY
 
 sys.path.insert(0, join(dirname(__file__), "../src/edeposit/amqp"))
 
